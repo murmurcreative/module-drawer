@@ -1,0 +1,67 @@
+= Drawer
+:Date: 10/22/2019
+:Revision: 0.0.0
+:Author: Ben Martinez-Bateman
+:Email: ben@murmurcreative.com
+:toc: macro
+:toclevels: 6
+:toc-title:
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+ifndef::env-github[]
+:tip-caption: 💡
+:note-caption: ℹ
+:important-caption: ❗
+:caution-caption: 🔥
+:warning-caption: ⚠
+endif::[] 
+
+This webcomponent follows the https://github.com/open-wc/open-wc[open-wc] recommendation.
+
+toc::[]
+
+== Installation
+
+[source,bash]
+----
+npm i murmur-drawer
+----
+
+== Usage
+
+[source,html]
+----
+<script type="module">
+  import 'murmur-drawer/murmur-drawer.js';
+</script>
+
+<murmur-drawer></murmur-drawer>
+----
+
+== Development
+
+=== Testing using karma 
+
+[source,bash]
+----
+npm run test
+----
+
+=== Testing using karma via browserstack
+
+[source,bash]
+----
+npm run test:bs
+----
+
+=== Linting
+
+[source,bash]
+----
+npm run lint
+----
