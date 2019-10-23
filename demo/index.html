@@ -10,20 +10,11 @@
 </head>
 <body>
   <div id="demo"></div>
-
-  <script type="module">
-    import { html, render } from 'lit-html';
-    import '../murmur-drawer.js';
-
-    const title = 'Hello owc World!';
-    render(
-      html`
-        <murmur-drawer .title=${title}>
-          some more light-dom
-        </murmur-drawer>
-      `,
-      document.querySelector('#demo')
-    );
-  </script>
+  <murmur-drawer>
+    <h2>The Drawer</h2>
+    <p>Some content.</p>
+    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Tenetur quaerat sint consequuntur. Omnis, totam enim, non reiciendis fugiat quos provident, quisquam eveniet incidunt libero ipsa necessitatibus corrupti dolor fuga accusamus.</p>
+  </murmur-drawer>
+  <script type="module" src="../murmur-drawer.js"></script>
 </body>
 </html>
