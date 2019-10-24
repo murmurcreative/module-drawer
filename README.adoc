@@ -95,7 +95,7 @@ See MDN for a https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_
   <div slot="content">
     <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
   </div>
-</murmur-drawer
+</murmur-drawer>
 ----
 
 == API
