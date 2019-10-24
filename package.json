@@ -1,6 +1,6 @@
 {
   "name": "murmur-drawer",
-  "version": "0.0.0",
+  "version": "1.0.0-alpha",
   "description": "Webcomponent murmur-drawer following open-wc recommendations",
   "author": "murmur-drawer",
   "license": "MIT",

@@ -1,6 +1,6 @@
 = Drawer
-:Date: 10/22/2019
-:Revision: 0.0.0
+:Date: 10/24/2019
+:Revision: 1.0.0-alpha
 :Author: Ben Martinez-Bateman
 :Email: ben@murmurcreative.com
 :toc: macro
@@ -40,8 +40,120 @@ npm i murmur-drawer
   import 'murmur-drawer/murmur-drawer.js';
 </script>
 
-<murmur-drawer></murmur-drawer>
+<murmur-drawer>
+  <h2 id="the-drawer">The Drawer</h2>
+  <p>Some content.</p>
+  <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Tenetur quaerat sint consequuntur. Omnis, totam enim, non reiciendis fugiat quos provident, quisquam eveniet incidunt libero ipsa necessitatibus corrupti dolor fuga accusamus.</p>
+</murmur-drawer>
 ----
+
+This is a very simple module, but it can be used for things like item selection, simple reveals, etc.
+It can also be composed together with other drawers to make menus, accordions, etc.
+
+== Polyfills
+
+The base module includes no polyfills or transpiling; it's just nice clean ES6 that should work in modern browsers.
+Until support for all the required technologies is more universal, we'll probably want to include the following _before_ including the element javascript.
+All you need to do is add this:
+
+[source,html]
+----
+<script
+    src="https://unpkg.com/@webcomponents/webcomponentsjs@2.3.0/webcomponents-loader.js">
+</script>
+----
+
+This will load any necessary for base functionality.
+Modules extended from this one may require their own polyfills.
+
+== Content
+
+=== heading
+
+This represents the name of the section this drawer contains.
+A heading must following a few rules:
+
+. It must be an `h` element (i.e. `h1`, `h3`, etc)
+. It must be the first element inside the `<murmur-drawer>`
+. It should have an id attribute (this is optional, but improves the user experience)
+
+[WARNING]
+While the heading is optional, if no heading is included then the drawer will load closed (i.e. invisible).
+Only forgo a heading if you have a plan to open the drawer in some other way (see the `toggle()` method or `open` attribute).
+
+=== content
+
+This is the content the drawer reveals, and is more or less required; Although the drawer will load if no content is defined, there isn't much point.
+Content is loaded through the use of slots.
+You can put whatever you link in the content slot.
+
+See MDN for a https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_templates_and_slots[more in-depth discussion of slots].
+
+[source,html]
+----
+<murmur-drawer>
+  <div slot="content">
+    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+  </div>
+</murmur-drawer
+----
+
+== API
+
+=== Attributes
+
+==== open
+
+Default:: `false`
+
+This represents whether the drawer is open (the attribute is present) or closed (the attribute is not present).
+Generally it is set dynamically by the drawer itself based on user interaction, but you can set it manually.
+
+==== headless
+
+Default:: `false`
+
+This attribute is set if the drawer has no heading.
+It will be set automatically if the drawer contains no valid heading element, but you can set it manually if, say, you have a `h` element as your first element but don't want it used as the heading.
+
+==== name
+
+Default:: `null`
+
+The drawer will use an id on its heading to do some things, most notable set a URL that automatically opens the drawer when visited.
+If you want to use that functionality but won't be using a heading, then you can set this attribute to whatever you would like to use as an id.
+
+[TIP]
+====
+If you want to set this via javascript, it is part of the `heading` object:
+[source,javascript]
+----
+document.querySelector(`murmur-drawer`).heading.id = `your-id`
+----
+====
+
+=== Methods
+
+==== toggle()
+
+[source,javascript]
+----
+document.querySelector(`murmur-drawer`).toggle();
+----
+
+Calling this method will swap the `open` state of the drawer: If it was open, it will close it, and visa-versa.
+
+=== Events
+
+Each drawer will emit several events when different things happen to it. 
+These events are used internally to drive the state of the module, but you can also hook into them and implement a lot of additional functionality.
+
+`drawer-opened`::
+  This fires when the drawer has opened.
+  When this event fires, the drawer is already open.
+`drawer-closed`::
+  This fires when the drawer has closed.
+  When this event fires, the drawer is already closed.
 
 == Development
 
