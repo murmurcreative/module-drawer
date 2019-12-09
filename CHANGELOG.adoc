@@ -1,0 +1,25 @@
+= Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on https://keepachangelog.com/en/1.0.0/[Keep a Changelog],
+and this project adheres to https://semver.org/spec/v2.0.0.html[Semantic Versioning].
+
+== [Unreleased]
+
+== [1.1.0-alpha] - 2019-12-09
+
+=== Fixed
+
+- Several typos in documentation.
+- 'false' id on heading would override name set on element.
+
+=== Added
+
+- Added (and clarified in documentation) better fallback chain for getting/building id.
+
+== [1.0.0-alpha]
+
+=== Added
+
+- Basic functionality.

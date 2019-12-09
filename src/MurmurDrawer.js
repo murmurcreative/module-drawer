@@ -71,13 +71,19 @@ export class MurmurDrawer extends LitElement {
     this.open = this.hasAttribute(`open`) || false;
     this.headless = this.hasAttribute(`headless`) || false;
     this.button = null;
+
+    let headingID = this.getAttribute(`name`) ? this.__urlify(this.getAttribute(`name`)) : false;
+    if (headingID === false) {
+      headingID = this.getAttribute(`id`) ? this.__urlify(this.getAttribute(`id`)) : false;
+    }
+
     this.heading = {
-      id: this.getAttribute(`name`) ? this.__urlify(this.getAttribute(`name`)) : false,
+      id: headingID,
       level: 2,
     };
-    
+
     /** Handle the heading and its level */
-    const lightHeading = !this.headless 
+    const lightHeading = !this.headless
       ? this.querySelector(`:first-child`)
       : false;
 
@@ -87,7 +93,10 @@ export class MurmurDrawer extends LitElement {
 
       if (lightHeadingLevel > 0) {
         this.heading.label = lightHeading ? lightHeading.textContent : false;
-        this.heading.id = lightHeading.id ? this.__urlify(lightHeading.id) : false;
+        /** Only set the id this way if no heading is set */
+        if (this.heading.id === false) {
+          this.heading.id = lightHeading.id ? this.__urlify(lightHeading.id) : false;
+        }
 
         /** Remove the heading so it doesn't appear twice */
         lightHeading.parentNode.removeChild(lightHeading);
@@ -124,7 +133,7 @@ export class MurmurDrawer extends LitElement {
     if (this.heading.id && window.location.hash.substr(1) === this.heading.id) {
       this.open = true;
       this.button.focus();
-    } 
+    }
   }
 
   updated(changed) {
