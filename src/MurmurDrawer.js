@@ -72,6 +72,9 @@ export class MurmurDrawer extends LitElement {
     this.headless = this.hasAttribute(`headless`) || false;
     this.button = null;
     this.hash = this.hasAttribute(`hash`);
+    this.controllers = this.getAttribute(`controller`)
+      ? document.querySelectorAll(this.getAttribute(`controller`))
+      : false;
 
     let headingID = this.getAttribute(`name`) ? this.__urlify(this.getAttribute(`name`)) : false;
     if (headingID === false) {
@@ -110,15 +113,36 @@ export class MurmurDrawer extends LitElement {
       }
     }
 
+    /**
+     * Set up controllers
+     */
+    if (this.controllers) {
+      this.controllers.forEach(el => {
+        el.addEventListener(`click`, () => {
+          this.toggle();
+        });
+      });
+    }
+
     this.addEventListener(`drawer-opened`, () => {
       if (this.hash && this.heading.id && this.open && window.location.hash.substr(1) !== this.heading.id) {
         history.pushState(null, null, '#' + this.heading.id);
+      }
+      if (this.controllers) {
+        this.controllers.forEach(el => {
+          el.setAttribute('aria-expanded', 'true');
+        });
       }
     });
 
     this.addEventListener(`drawer-closed`, () => {
       if (this.hash && this.heading.id && window.location.hash.substr(1) === this.heading.id) {
         history.pushState(null, null, window.location.pathname);
+      }
+      if (this.controllers) {
+        this.controllers.forEach(el => {
+          el.setAttribute('aria-expanded', 'false');
+        });
       }
     });
 
