@@ -7,6 +7,12 @@ and this project adheres to https://semver.org/spec/v2.0.0.html[Semantic Version
 
 == [Unreleased]
 
+== [1.2.0-alpha] - 2019-12-11
+
+=== Added
+
+- `hash` setting, which makes the URL hash behavior default to "false" and allows it behavior to be turned out with a `hash` boolean attribute.
+
 == [1.1.0-alpha] - 2019-12-09
 
 === Fixed

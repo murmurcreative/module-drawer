@@ -1,6 +1,6 @@
 = Drawer
 :Date: 12/09/2019
-:Revision: 1.1.0-alpha
+:Revision: 1.2.0-alpha
 :Author: Ben Martinez-Bateman
 :Email: ben@murmurcreative.com
 :toc: macro
@@ -132,6 +132,14 @@ If you want to set this via javascript, it is part of the `heading` object:
 document.querySelector(`murmur-drawer`).heading.id = `your-id`
 ----
 ====
+
+==== hash
+
+Default:: `false`
+
+If this is enabled, the drawer will set a URL hash when opened, and when visiting that URL it will automatically open the drawer.
+Since one of the main use cases for the drawer is for main site navigation, which should never 'start open', this attribute defaults to false.
+As a boolean attribute, its presence on the element is enough to activate the feature.
 
 === Methods
 

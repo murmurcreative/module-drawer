@@ -71,6 +71,7 @@ export class MurmurDrawer extends LitElement {
     this.open = this.hasAttribute(`open`) || false;
     this.headless = this.hasAttribute(`headless`) || false;
     this.button = null;
+    this.hash = this.hasAttribute(`hash`);
 
     let headingID = this.getAttribute(`name`) ? this.__urlify(this.getAttribute(`name`)) : false;
     if (headingID === false) {
@@ -110,16 +111,16 @@ export class MurmurDrawer extends LitElement {
     }
 
     this.addEventListener(`drawer-opened`, () => {
-      if (this.heading.id && this.open && window.location.hash.substr(1) !== this.heading.id) {
+      if (this.hash && this.heading.id && this.open && window.location.hash.substr(1) !== this.heading.id) {
         history.pushState(null, null, '#' + this.heading.id);
       }
-    })
+    });
 
     this.addEventListener(`drawer-closed`, () => {
-      if (this.heading.id && window.location.hash.substr(1) === this.heading.id) {
+      if (this.hash && this.heading.id && window.location.hash.substr(1) === this.heading.id) {
         history.pushState(null, null, window.location.pathname);
       }
-    })
+    });
 
     this.events = {
       opened: new CustomEvent(`drawer-opened`),
@@ -130,7 +131,7 @@ export class MurmurDrawer extends LitElement {
   firstUpdated() {
     this.button = this.shadowRoot.querySelector(`button`);
 
-    if (this.heading.id && window.location.hash.substr(1) === this.heading.id) {
+    if (this.hash && this.heading.id && window.location.hash.substr(1) === this.heading.id) {
       this.open = true;
       this.button.focus();
     }
