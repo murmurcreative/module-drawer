@@ -7,6 +7,13 @@ and this project adheres to https://semver.org/spec/v2.0.0.html[Semantic Version
 
 == [Unreleased]
 
+== [1.3.0-alpha] - 2019-12-11
+
+=== Added
+
+- `controller` setting, which allows for easy definition of controlling elements outside the module.
+- `icon` slot, which allows for easy handling of an open/closed icon.
+
 == [1.2.0-alpha] - 2019-12-11
 
 === Added
