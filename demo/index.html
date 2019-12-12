@@ -6,6 +6,15 @@
     body {
       background: #fafafa;
     }
+    .open, .closed {
+      display: none;
+    }
+    [data-open="true"] .open {
+      display: block;
+    }
+    [data-open="false"] .closed {
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -16,6 +25,10 @@
     <h2 id="the-drawer">The Drawer</h2>
     <p>Some content.</p>
     <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Tenetur quaerat sint consequuntur. Omnis, totam enim, non reiciendis fugiat quos provident, quisquam eveniet incidunt libero ipsa necessitatibus corrupti dolor fuga accusamus.</p>
+    <div slot="icon">
+      <span class="open">☝</span>
+      <span class="closed">👇</span>
+    </div>
   </murmur-drawer>
   <murmur-drawer name="a drawer" id="no-deal" hash controller="button[data-drawer='a drawer']">
     <h2 id="the-heading">Hi there</h2>

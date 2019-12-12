@@ -1,6 +1,6 @@
 = Drawer
 :Date: 12/09/2019
-:Revision: 1.2.0-alpha
+:Revision: 1.3.0-alpha
 :Author: Ben Martinez-Bateman
 :Email: ben@murmurcreative.com
 :toc: macro
@@ -56,6 +56,38 @@ There are several ways you can set this ID:
 . An `id` attribute on the heading inside the drawer
 . An `id` attribute on the drawer element itself (this overrides #1)
 . A `name` attribute on the drawer element itself (this overrides #1 and #2)
+
+=== `icon` Slot
+
+By default the module uses a big "plus" sign to indicate whether the module is open or closed.
+If you would like to customize this, you can do so with the `icon` slot:
+
+[source,html]
+----
+<style>
+  .closed, .opened {
+    display: none;
+  }
+  [data-open="false"] .closed {
+    display: block;
+  }
+  [data-open="true"] .opened {
+    display: block;
+  }
+</style>
+<murmur-drawer>
+  <h2 id="the-drawer">The Drawer</h2>
+  <p>Some content.</p>
+  <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Tenetur quaerat sint consequuntur. Omnis, totam enim.</p>
+  <div slot="icon">
+    <span class="opened">👆</span>
+    <span class="closed">👇</span>
+  </div>
+</murmur-drawer>
+----
+
+The slot element will be given a `data-open` attribute that is `false` when the drawer is closed and `true` when open.
+Since this is applied to an element in the "light" DOM, you can use a normal stylesheet to control the appearance of elements inside the slot.
 
 == Polyfills
 
@@ -140,6 +172,39 @@ Default:: `false`
 If this is enabled, the drawer will set a URL hash when opened, and when visiting that URL it will automatically open the drawer.
 Since one of the main use cases for the drawer is for main site navigation, which should never 'start open', this attribute defaults to false.
 As a boolean attribute, its presence on the element is enough to activate the feature.
+
+==== controller
+
+Default:: `null`
+
+This attribute allows you to quickly and easily define an element (or elements) that will control the state of this drawer.
+Set the value of the attribute to a CSS selector that matches the elements you want to use to control this drawer.
+If you have multiple drawers, make sure that their controllers are distinct:
+Otherwise you may get some very strange behavior.
+
+Controllers will get a `aria-expanded` attribute to reflect the state of their drawer:
+`aria-expanded="true"` when open, `aria-expanded="false"` when closed.
+
+[source,html]
+----
+<button id="specific-button" aria-expanded="false">Click to Open</button>
+<murmur-drawer controller="button#specific-button">
+    ...
+</murmur-drawer>
+----
+
+[TIP]
+====
+It is recommended that you set `aria-expanded="false"` on your controller manually, so that it has the correct value before instantiation of the module.
+====
+
+[IMPORTANT]
+====
+While you can technically use any element as a controller, you should keep two things in mind:
+
+. The module will watch for `click` events on controllers, so use elements that can spawn that event.
+. For semantic and interaction reasons, it is _strongly_ recommended that you use `button` elements for your controllers
+====
 
 === Methods
 

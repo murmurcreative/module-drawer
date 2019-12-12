@@ -7,6 +7,8 @@ export class MurmurDrawer extends LitElement {
         font-family: var(--mod-heading-typeface, inherit);
         font-size: var(--mod-heading-size, 1.5rem);
         color: var(--mod-heading-color, currentColor);
+        margin: 0;
+        padding: 0;
       }
 
       button {
@@ -75,6 +77,7 @@ export class MurmurDrawer extends LitElement {
     this.controllers = this.getAttribute(`controller`)
       ? document.querySelectorAll(this.getAttribute(`controller`))
       : false;
+    this.icon = false;
 
     let headingID = this.getAttribute(`name`) ? this.__urlify(this.getAttribute(`name`)) : false;
     if (headingID === false) {
@@ -133,6 +136,11 @@ export class MurmurDrawer extends LitElement {
           el.setAttribute('aria-expanded', 'true');
         });
       }
+      if (this.icon) {
+        this.icon.forEach(el => {
+          el.setAttribute('data-open', 'true');
+        })
+      }
     });
 
     this.addEventListener(`drawer-closed`, () => {
@@ -144,6 +152,11 @@ export class MurmurDrawer extends LitElement {
           el.setAttribute('aria-expanded', 'false');
         });
       }
+      if (this.icon) {
+        this.icon.forEach(el => {
+          el.setAttribute('data-open', 'false');
+        })
+      }
     });
 
     this.events = {
@@ -154,6 +167,13 @@ export class MurmurDrawer extends LitElement {
 
   firstUpdated() {
     this.button = this.shadowRoot.querySelector(`button`);
+
+    this.icon = this.querySelectorAll(`[slot="icon"]`);
+    if (this.icon) {
+      this.icon.forEach(el => {
+        el.setAttribute('data-open', this.open ? 'true' : 'false');
+      });
+    }
 
     if (this.hash && this.heading.id && window.location.hash.substr(1) === this.heading.id) {
       this.open = true;
@@ -191,12 +211,14 @@ export class MurmurDrawer extends LitElement {
       .replace(/-+$/, '');
   }
 
-  __makeSvg() {
+  __makeIcon() {
     return html`
-      <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
-        <rect class="vert" height="8" width="2" y="1" x="4"/>
-        <rect height="2" width="8" y="4" x="1"/>
-      </svg>
+      <slot name="icon">
+        <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
+          <rect class="vert" height="8" width="2" y="1" x="4"/>
+          <rect height="2" width="8" y="4" x="1"/>
+        </svg>
+      </slot>
     `;
   }
 
@@ -206,7 +228,7 @@ export class MurmurDrawer extends LitElement {
           <h3 aria-level=${this.heading.level} class="heading" id=${this.heading.id}>
             <button aria-expanded=${this.open} @click=${this.toggle}>
               <span>${this.heading.label}</span>
-              ${this.__makeSvg()}
+              ${this.__makeIcon()}
             </button>
           </h3>
         `
