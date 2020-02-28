@@ -15,6 +15,15 @@
     [data-open="false"] .closed {
       display: block;
     }
+    #different-hidden {
+      --mod-hidden-display: block;
+      opacity: 0;
+      transition: opacity 0.5s;
+      display: block;
+    }
+    #different-hidden[open] {
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
@@ -30,8 +39,15 @@
       <span class="closed">👇</span>
     </div>
   </murmur-drawer>
+
   <murmur-drawer name="a drawer" id="no-deal" hash controller="button[data-drawer='a drawer']">
     <h2 id="the-heading">Hi there</h2>
+    <p>Some content.</p>
+    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Tenetur quaerat sint consequuntur. Omnis, totam enim, non reiciendis fugiat quos provident, quisquam eveniet incidunt libero ipsa necessitatibus corrupti dolor fuga accusamus.</p>
+  </murmur-drawer>
+
+  <murmur-drawer name="a drawer" id="different-hidden" hash controller="button[data-drawer='a drawer']">
+    <h2 id="another-heading">Hi there</h2>
     <p>Some content.</p>
     <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Tenetur quaerat sint consequuntur. Omnis, totam enim, non reiciendis fugiat quos provident, quisquam eveniet incidunt libero ipsa necessitatibus corrupti dolor fuga accusamus.</p>
   </murmur-drawer>

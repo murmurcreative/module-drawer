@@ -32,6 +32,10 @@ export class MurmurDrawer extends LitElement {
         color: var(--mod-content-color, currentColor);
       }
 
+      [hidden] {
+        display: var(--mod-hidden-display, none);
+      }
+
       ${this.svgStyles}
     `;
   }
@@ -108,7 +112,7 @@ export class MurmurDrawer extends LitElement {
         /** Remove the heading so it doesn't appear twice */
         lightHeading.parentNode.removeChild(lightHeading);
 
-        if (lightHeadingLevel && 2 !== lightHeadingLevel) {
+        if (lightHeadingLevel && lightHeadingLevel !== 2) {
           this.heading.level = lightHeadingLevel;
         }
       } else {
@@ -129,7 +133,7 @@ export class MurmurDrawer extends LitElement {
 
     this.addEventListener(`drawer-opened`, () => {
       if (this.hash && this.heading.id && this.open && window.location.hash.substr(1) !== this.heading.id) {
-        history.pushState(null, null, '#' + this.heading.id);
+        history.pushState(null, null, `#${  this.heading.id}`);
       }
       if (this.controllers) {
         this.controllers.forEach(el => {

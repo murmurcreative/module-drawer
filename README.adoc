@@ -1,6 +1,6 @@
 = Drawer
-:Date: 2020/02/11 
-:Revision: 1.0.1
+:Date: 2020/02/27
+:Revision: 1.1.0
 :Author: Ben Martinez-Bateman
 :Email: ben@murmurcreative.com
 :toc: macro
@@ -205,6 +205,23 @@ While you can technically use any element as a controller, you should keep two t
 . The module will watch for `click` events on controllers, so use elements that can spawn that event.
 . For semantic and interaction reasons, it is _strongly_ recommended that you use `button` elements for your controllers
 ====
+
+=== CSS
+
+[WARNING]
+====
+.TODO
+Document the rest of the CSS properties.
+====
+
+==== Hidden
+
+In some cases it may be useful to redefine what `hidden` means
+(i.e. if you want to do something more complex that simply hide/show content).
+
+* `--mod-hidden-display` (`none`) +
+This sets the `display` property for `[hidden]` within the drawer.
+An example usage might be to set this to `block`, and then change the `opacity` of the parent `murmur-drawer` based on the presence of the `open` attribute there.
 
 === Methods
 
