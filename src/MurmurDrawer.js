@@ -172,7 +172,7 @@ export class MurmurDrawer extends LitElement {
   firstUpdated() {
     this.button = this.shadowRoot.querySelector(`button`);
 
-    this.icon = this.querySelectorAll(`[slot="icon"]`);
+    this.icon = Array.from(this.children).filter(el => el.getAttribute(`slot`) === `icon`);
     if (this.icon) {
       this.icon.forEach(el => {
         el.setAttribute('data-open', this.open ? 'true' : 'false');
