@@ -15,18 +15,18 @@ export class MurmurDrawer extends LitElement {
         all: inherit;
         cursor: pointer;
         display: var(--mod-heading-display, flex);
-        align-items: var(--mode-heading-align-items, center);
-        justify-content: var(--mode-heading-justify, space-between);
-        text-align: var(--mode-heading-align-text, left);
-        padding: var(--mode-heading-padding, 0);
-        margin: var(--mode-heading-margin, 0);
-        width: var(--mode-heading-width, 100%);
+        align-items: var(--mod-heading-align-items, center);
+        justify-content: var(--mod-heading-justify, space-between);
+        text-align: var(--mod-heading-align-text, left);
+        padding: var(--mod-heading-padding, 0);
+        margin: var(--mod-heading-margin, 0);
+        width: var(--mod-heading-width, 100%);
       }
 
       .content  {
-        padding: var(--mode-content-padding, 0);
-        margin: var(--mode-content-margin, 0);
-        text-align: var(--mode-content-align-text, left);
+        padding: var(--mod-content-padding, 0);
+        margin: var(--mod-content-margin, 0);
+        text-align: var(--mod-content-align-text, left);
         font-family: var(--mod-content-typeface, inherit);
         font-size: var(--mod-content-size, 1rem);
         color: var(--mod-content-color, currentColor);
