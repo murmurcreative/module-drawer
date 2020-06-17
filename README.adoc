@@ -29,7 +29,7 @@ toc::[]
 
 [source,bash]
 ----
-npm i murmur-drawer
+npm i @murmurcreative/drawer
 ----
 
 == Usage
