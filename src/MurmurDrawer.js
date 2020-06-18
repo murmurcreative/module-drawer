@@ -30,6 +30,7 @@ export class MurmurDrawer extends LitElement {
         font-family: var(--mod-content-typeface, inherit);
         font-size: var(--mod-content-size, 1rem);
         color: var(--mod-content-color, currentColor);
+        height: var(--mod-content-height, 100%);
       }
 
       [hidden] {
