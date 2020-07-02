@@ -1,0 +1,42 @@
+= Drawer
+
+Broadly: Open things and close them as well.
+
+Technically: Swap states on a particular element in an event-driven way.
+
+== Operation
+
+The basic idea for how Drawer operates is:
+
+[source]
+----
+Request State Change => Fire Event => React to Event to Change Internal State
+----
+
+In other words, you're never modifying the internal state directly:
+The Drawer listens for events with particular properties, and then modifies the state based on those events.
+The purpose of this model is two-fold:
+
+. Provide a single source of truth for state changes (the event)
+. Provide an easy way for external scripts to understand what is happening in the drawer
+
+== Goals
+
+=== Idempotency and Functionality
+
+So far as it is feasible, internal methods for this module should do their best to be idempotent and functional:
+That is they will have no
+(or, more like, only one)
+side effects and running the same method multiple times will have the same result
+(if that makes sense)
+or a very predictable result.
+
+The intent here is to make the source less complex, easier to debug, and easier to understand.
+
+=== Better IE11 Compatibility
+
+Trying to get v1 of this module to work with IE11 was possible, but a huge hassle.
+By avoiding any framework, and keeping the source simple, my intent is to make v2 either compatible out of the box, or compatible with a minimal amount of work.
+This might look like distributing a separate transpiled source file for browsers that don't support modern technologies, or a sort section in the Readme detailing how to get it working in IE11.
+
+Whatever the case, you should be able to trust that this module will work, easily, in IE11.
