@@ -14,7 +14,11 @@
 
 ## temp folders
 /.tmp/
+.cache/
 
 # build
 /_site/
 /dist/
+
+# old module
+old/
