@@ -40,3 +40,61 @@ By avoiding any framework, and keeping the source simple, my intent is to make v
 This might look like distributing a separate transpiled source file for browsers that don't support modern technologies, or a sort section in the Readme detailing how to get it working in IE11.
 
 Whatever the case, you should be able to trust that this module will work, easily, in IE11.
+
+== Notes
+
+TBD: Organize this
+
+=== Settings
+
+The module interprets some settings to do its thing.
+There are two ways of directly modifying settings:
+
+. Pass a settings object to your instantiation:
++
+[source,javascript]
+----
+setup({
+    drawerSelector: `.drawer`,
+    initState: `closed`,
+    knobs: [ `.knob` ],
+})
+----
+. Describe settings on each drawer using `data-` attributes:
++
+[source,html]
+----
+<div data-module="drawer"
+    data-state="closed"
+    data-knob=".knob" > ... </div>
+----
+
+Settings described on a drawer with `data-` attributes will always *override* settings passed to the instantiation, unless otherwise specified.
+
+Not all settings can be described through `data-` attributes
+(for instance it would be pointless to describe the `drawerSelector` that way).
+
+=== Knobs
+
+The previous iteration of this module had a concept of "controllers" which basically broke down to "buttons that open/close".
+Knobs are an extension of that.
+They're called knobs because drawers have knobs!
+Usually you use them to open/close drawers, but sometimes they're just decorative?
+
+The basic concept of a knob in the library is a DOM element that dispatches its own events to mirror state change events on its associated drawer(s).
+Unlike drawer events, knob events _do not_ bubble:
+They are fired only on the knob itself.
+Usually, you'll be using this to modify the independent state of the knob
+(i.e. add/remove classes, attributes, etc)
+but it can be used to do...whatever, really.
+
+When `knobsCycle` is set to `true`
+(its default value)
+then clicking on knobs will fire the `cycle()` method on any associated drawer(s).
+When a drawer has only two states (open and closed) then this implements the standard interaction model of opening/closing a drawer.
+In all likelihood this is all you'll ever need to do, but it is capable of more interesting interactions as well.
+
+*Keep in mind* that knobs can be attached to multiple drawers
+(the physical-world metaphor clearly breaks down here)
+and that if you aren't careful about this it could lead to some strange behavior.
+
