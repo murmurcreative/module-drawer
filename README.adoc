@@ -1,8 +1,33 @@
+:Date: 07/04/2020
+:Author: Ben Martinez-Bateman
+:Email: ben@murmurcreative.com
+:toc: macro
+:toclevels: 3
+:toc-title:
+:sectanchors:
+:sectlinks:
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+ifndef::env-github[]
+:tip-caption: 💡
+:note-caption: ℹ
+:important-caption: ❗
+:caution-caption: 🔥
+:warning-caption: ⚠
+endif::[]
+
 = Drawer
 
 *Broadly:* Open things and close them as well.
 
 *Technically:* Swap states on a particular element.
+
+toc::[]
 
 == Using It
 
