@@ -131,11 +131,12 @@ function activateDrawer(el, settings) {
         cycle: cycle.bind(el),
     };
 
-    // Setting this up early so it will receive events dispatched in a few lines
+    // Set up any knobs we're aware of
     if (el.drawer.settings.knobs) {
         setupKnobs.bind(el)();
     }
 
+    // Start observing this drawer
     (new MutationObserver(drawerObserverCallback.bind(el))).observe(el, {
         attributes: true,
         attributeFilter: [`data-state`, `hidden`],
@@ -145,6 +146,11 @@ function activateDrawer(el, settings) {
     });
 }
 
+/**
+ * Called whenever the drawer observes a mutation change.
+ * @param mutationList
+ * @param observer
+ */
 function drawerObserverCallback(mutationList, observer) {
     for (let i = 0; i < mutationList.length; i++) {
         const {
@@ -161,12 +167,20 @@ function drawerObserverCallback(mutationList, observer) {
                 }
             }
         } = mutationList[i];
+
+        // Couple our hidden attribute to our state
         if (`data-state` === attributeName) {
             setHidden(hiddenStates.indexOf(state) > -1);
         }
     }
 }
 
+/**
+ * This adds any knobs defined on the drawer.
+ *
+ * It does this by calling the drawer's `addKnob` method on each knob it's
+ * aware of.
+ */
 function setupKnobs() {
     const {knobs} = this.drawer.settings;
     const {addKnob} = this.drawer;
@@ -181,6 +195,13 @@ function setupKnobs() {
         .map(addKnob);
 }
 
+/**
+ * This is a sort of intermediary function: Because `sel()` always returns
+ * arrays, this handles dealing with each element of the array. The purpose of
+ * this is that we want to be able to pass either a selector string or a literal
+ * element when setting up a list of knobs and not have to think about it.
+ * @param selector
+ */
 function setupKnobsFromSelector(selector) {
     const array = sel(selector);
 
@@ -191,6 +212,11 @@ function setupKnobsFromSelector(selector) {
     array.map(setupSingleKnob.bind(this));
 }
 
+/**
+ * This attaches a single knob to the drawer bound to this function.
+ * It's accessible on the drawer itself at `[drawer element].drawer.addKnob()`.
+ * @param el
+ */
 function setupSingleKnob(el) {
     // Need to namespace all our knob stuff
     if (!el.hasOwnProperty(`knob`)) {
@@ -239,10 +265,21 @@ function setupSingleKnob(el) {
     el.addEventListener(`click`, handleKnobClick.bind(el));
 }
 
+/**
+ * Handles setting the aria-expanded attribute on the knob bound to this
+ * function.
+ * @param drawer
+ */
 function knobSetAriaExpanded(drawer) {
     this.setAttribute(`aria-expanded`, !drawer.hidden);
 }
 
+/**
+ * This is called when the knob observes a mutation on a drawer it is
+ * attached to.
+ * @param mutationList
+ * @param observer
+ */
 function knobObserverCallback(mutationList, observer) {
     const {actions} = this.knob;
     if (actions.length > 0) {
