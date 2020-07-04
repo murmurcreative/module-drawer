@@ -31,6 +31,8 @@ function Drawer(el, userSettings) {
         cycle: states => cycle(el, states),
     });
 
+    // Since this is called with the `new` keyword, `this` is a fresh object,
+    // which we want to store on the element at the API endpoint.
     el.drawer = this;
 
     // Set up any knobs we're aware of
@@ -42,7 +44,7 @@ function Drawer(el, userSettings) {
             .map(addKnob);
     }
 
-    // Could state to hidden attribute
+    // Couple state to hidden attribute
     const {addAction} = el.drawer;
     addAction(list => {
         for (let i = 0; i < list.length; i++) {

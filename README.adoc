@@ -143,7 +143,7 @@ The callback recieves the following arguments:
 
 Knobs are elements that become attached to a Drawer:
 More specifically, they observe the Drawer with MutationObserver in the same way it observes itself, and fire their own actions when they detect mutations.
-By default, when clicks Knobs will cycle a Drawer through its states.
+By default, when clicked Knobs will cycle a Drawer through its states.
 
 Your Drawers aren't required to have Knobs, but they are a quick and easy way to implement the functionality 80% of Drawers are deployed for.
 
