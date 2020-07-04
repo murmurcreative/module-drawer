@@ -1,37 +1,166 @@
 = Drawer
 
-Broadly: Open things and close them as well.
+*Broadly:* Open things and close them as well.
 
-Technically: Swap states on a particular element in an event-driven way.
+*Technically:* Swap states on a particular element.
 
-== Operation
+== Using It
 
-The basic idea for how Drawer operates is:
+First, create an element to be your drawer:
 
-[source]
+[source,html]
 ----
-Request State Change => Fire Event => React to Event to Change Internal State
+<div data-module="drawer">
+    <!--  Clothes, cables, etc  -->
+</div>
 ----
 
-In other words, you're never modifying the internal state directly:
-The Drawer listens for events with particular properties, and then modifies the state based on those events.
-The purpose of this model is two-fold:
+Next, import Drawer and start it up:
 
-. Provide a single source of truth for state changes (the event)
-. Provide an easy way for external scripts to understand what is happening in the drawer
+[source,javascript]
+----
+import {Cabinet} from 'murmur-drawer';
+
+new Cabinet();
+----
+
+Now you have a Drawer!
+
+Unfortunately it won't look like much, so please take a look at the link:#config[configuration] and link:#api[API] sections.
+
+[#config]
+== Configuration
+
+Both `Drawer` and `Cabinet` take a second argument that can contain more specific settings.
+
+
+[#instantiation]
+== Instantiation
+
+- `new Drawer(element, settings)` - The `element` argument is *required* and _must_ be a reference to a DOM element, i.e. the result of `document.querySelector()`.
+Use this if you want to instantiate only a single, specific Drawer
+(i.e. a site navigation menu).
++
+This returns an API object (see below) for the Drawer.
+- `new Cabinet(selector, settings)` - The `selector` argument is *required*, and must be either a valid selector
+(i.e. something `document.querySelectorAll()` understands)
+or a reference to a DOM element.
+Use this if you want to instantiate a bunch of Drawers at once with the same settings
+(i.e. an accordion).
++
+This returns an array of API objects (see below).
+
+[#api]
+== API
+
+Each Drawer has an API object that contains settings information as well as several methods for interacting with that Drawer.
+
+These API objects are returned by link:#instantiation[`new Drawer()` and `new Cabinet()`], and can also be found attached to the Drawer element, under the `drawer` property.
+
+[horizontal]
+`settings`:: Contains information describing Drawer behavior.
+See link:#config[Config] for full settings documentation.
+`getState()`:: Returns the current state of the Drawer.
+`setState(state)`:: Sets the state of the Drawer.
+`setHidden(hide)`:: Sets the `hidden` attribute of the Drawer element.
+`addKnob(knob)`:: Adds a link:#knobs[Knob].
+`cycle(states)`:: Advances the Drawer through states.
+If the `states` argument is undefined/not passed, then it will move to the next state defined in settings.
+If the `states` argument is an array of valid states
+(that is, states that also appear in the settings)
+then it will move to the next valid state in that array.
+See the link:src/drawer.js[function definition] for more information.
+`addAction(action)`:: Add a callback that will be called when the Drawer detects a state change.
+The callback recieves the following arguments:
+** `list` - An array of mutations detected.
+** `el` - The DOM element of the Drawer.
+** `observer` - The observer that is watching this drawer.
+
+[#knobs]
+== Knobs
+
+Knobs are elements that become attached to a Drawer:
+More specifically, they observe the Drawer with MutationObserver in the same way it observes itself, and fire their own actions when they detect mutations.
+By default, when clicks Knobs will cycle a Drawer through its states.
+
+Your Drawers aren't required to have Knobs, but they are a quick and easy way to implement the functionality 80% of Drawers are deployed for.
+
+You can attach a Knob to a Drawer in one of three ways:
+
+. Provide an element or selector in the settings at instantiation:
++
+[source,javascript]
+----
+new Drawer(`.drawer`, {knobs: [`.knob`]})
+----
+
+. Use `addKnob` to add a Knob to an already instantiated Drawer:
++
+[source,javascript]
+----
+(new Drawer(`.drawer`)).addKnob(`.knob`);
+
+// or
+
+const {addKnob} = document.querySelector(`drawer`).drawer;
+addKnob(`.knob`);
+----
+
+. Provide a selector in the `data-knob` attribute:
++
+[source,html]
+----
+<div class="drawer" data-knob=".knob"> ... </div>
+----
+
+[IMPORTANT]
+====
+A Drawer can have multiple Knobs, and methods 1 and 3 above can result in attaching multiple Knobs if the provided selectors match more than on element in the DOM.
+====
+
+The following is a simple, complete example that will result in a drawer that can be opened and closed by clicking on the button:
+
+[source,javascript]
+----
+import {Drawer} from "murmur-drawer";
+
+new Drawer(document.querySelector(`.drawer`));
+----
+
+[source,html]
+----
+<div class="drawer"
+    data-knob="button[data-controls='drawer']"> 🧦🧦🧦🧦🧦🧦🧦🧦 </div>
+<button data-controls="drawer"> Toggle </button>
+----
+
+== Further Reading
+Drawer is several dozen lines of code that manage, essentially, one thing:
+
+[source,html]
+----
+data-state="open"
+----
+
+This is the single source of truth for everything Drawer does, and by taking advantage of a number of native browser features it does so efficiently and extensibly.
+
+Using link:https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver[MutationObserver], Drawer watches for state changes and reacts to them.
+You are of course encouraged to use Drawer's simple API to interact with its state, but the beauty of MutationObserver is that it doesn't matter:
+
+[source,javascript]
+----
+const el = document.querySelector(`.drawer`);
+
+// Drawer API
+const {setState} = el.drawer;
+setState(`closed`);
+
+// Direct access
+drawer.dataset.state = `closed`;
+----
+
 
 == Goals
-
-=== Idempotency and Functionality
-
-So far as it is feasible, internal methods for this module should do their best to be idempotent and functional:
-That is they will have no
-(or, more like, only one)
-side effects and running the same method multiple times will have the same result
-(if that makes sense)
-or a very predictable result.
-
-The intent here is to make the source less complex, easier to debug, and easier to understand.
 
 === Better IE11 Compatibility
 
@@ -41,60 +170,7 @@ This might look like distributing a separate transpiled source file for browsers
 
 Whatever the case, you should be able to trust that this module will work, easily, in IE11.
 
-== Notes
+=== Simpler
 
-TBD: Organize this
-
-=== Settings
-
-The module interprets some settings to do its thing.
-There are two ways of directly modifying settings:
-
-. Pass a settings object to your instantiation:
-+
-[source,javascript]
-----
-setup({
-    drawerSelector: `.drawer`,
-    initState: `closed`,
-    knobs: [ `.knob` ],
-})
-----
-. Describe settings on each drawer using `data-` attributes:
-+
-[source,html]
-----
-<div data-module="drawer"
-    data-state="closed"
-    data-knob=".knob" > ... </div>
-----
-
-Settings described on a drawer with `data-` attributes will always *override* settings passed to the instantiation, unless otherwise specified.
-
-Not all settings can be described through `data-` attributes
-(for instance it would be pointless to describe the `drawerSelector` that way).
-
-=== Knobs
-
-The previous iteration of this module had a concept of "controllers" which basically broke down to "buttons that open/close".
-Knobs are an extension of that.
-They're called knobs because drawers have knobs!
-Usually you use them to open/close drawers, but sometimes they're just decorative?
-
-The basic concept of a knob in the library is a DOM element that dispatches its own events to mirror state change events on its associated drawer(s).
-Unlike drawer events, knob events _do not_ bubble:
-They are fired only on the knob itself.
-Usually, you'll be using this to modify the independent state of the knob
-(i.e. add/remove classes, attributes, etc)
-but it can be used to do...whatever, really.
-
-When `knobsCycle` is set to `true`
-(its default value)
-then clicking on knobs will fire the `cycle()` method on any associated drawer(s).
-When a drawer has only two states (open and closed) then this implements the standard interaction model of opening/closing a drawer.
-In all likelihood this is all you'll ever need to do, but it is capable of more interesting interactions as well.
-
-*Keep in mind* that knobs can be attached to multiple drawers
-(the physical-world metaphor clearly breaks down here)
-and that if you aren't careful about this it could lead to some strange behavior.
-
+Instead of getting fancy with things like web components, this keeps it simple:
+No frameworks or dependencies, just good old link:http://vanilla-js.com/[Vanilla JS].
