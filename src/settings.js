@@ -10,9 +10,7 @@ export default settings => {
          */
         states: [
             `closed`,
-            `opening`,
             `open`,
-            `closing`,
         ],
         initState: undefined, // This will default to the first state in the states array.
         /**
