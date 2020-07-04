@@ -29,29 +29,31 @@ endif::[]
 
 toc::[]
 
-== Using It
+== Installation
 
-First, create an element to be your drawer:
-
-[source,html]
+[source,shell script]
 ----
-<div data-module="drawer">
-    <!--  Clothes, cables, etc  -->
-</div>
+npm install @murmurcreative/drawer@2.0.0-alpha
 ----
-
-Next, import Drawer and start it up:
 
 [source,javascript]
 ----
 import {Cabinet} from 'murmur-drawer';
-
 new Cabinet();
+----
+
+[source,html]
+----
+<div data-module="drawer" data-knob="#knob">
+    <!--  Drawer Contents  -->
+</div>
+
+<button id="knob">Toggle</button>
 ----
 
 Now you have a Drawer!
 
-Unfortunately it won't look like much, so please take a look at the link:#config[configuration] and link:#api[API] sections.
+For more details on functionality, etc, take a look at the link:#config[configuration] and link:#api[API] sections.
 
 [#config]
 == Configuration
