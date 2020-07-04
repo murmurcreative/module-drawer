@@ -3,6 +3,7 @@
   "version": "2.0.0-alpha",
   "description": "Open things and close them as well.",
   "main": "index.js",
+  "publishConfig": { "registry": "https://npm.pkg.github.com/" },
   "scripts": {
     "dev": "parcel demo/index.html"
   },
