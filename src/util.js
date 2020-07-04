@@ -5,14 +5,29 @@
  */
 const isEl = el => el instanceof Element || el instanceof HTMLDocument;
 
+const tagRegex = /^\w*.$/;
+const idRegex = /^#[\w_-]*.$/;
+const classRegex = /^\.[\w_-]*.$/;
+
 /**
  * Get an array of elements matching a string, or return an element passed.
  * @param el
  * @returns {array}
  */
-const sel = el => (typeof el === `string`)
-    ? Array.from(document.querySelectorAll(el))
-    : isEl(el) ? [el] : [];
+const sel = el => {
+    // Return immediately, but in an array
+    if (isEl(el)) return [el];
+    // Not an arg we understand
+    if (typeof el !== `string`) return [];
+    // ID argument, use faster search
+    if (idRegex.test(el)) return [document.getElementById(el.slice(1))];
+    // Tag argument, use faster search
+    if (tagRegex.test(el)) return Array.from(document.getElementsByTagName(el));
+    // Class argument, use faster search
+    if (classRegex.test(el)) return Array.from(document.getElementsByClassName(el));
+    // Just use querySelectorAll
+    return Array.from(document.querySelectorAll(el));
+};
 
 /**
  * Merges two objects.
