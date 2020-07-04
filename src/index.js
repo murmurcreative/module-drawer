@@ -30,56 +30,23 @@ const merge = (target, defaults) => {
     return Object.assign(Object.assign({}, target), defaults);
 };
 
-/**
- * Create a custom event describing a state transition.
- * @param from
- * @param to
- * @returns {CustomEvent<{from: *, to: *}>}
- */
-const makeStateEvent = (from, to) => {
-    return new CustomEvent(`drawerState`, {
-        detail: {
-            from: from,
-            to: to,
-        },
-        bubbles: true,
-    })
-};
-
-/**
- * Create a custom event describing the change of the hidden attribute.
- * @param from
- * @param to
- * @returns {CustomEvent<{from: *, to: *}>}
- */
-const makeHiddenEvent = (from, to) => {
-    return new CustomEvent(`drawerHidden`, {
-        detail: {
-            from: from,
-            to: to,
-        },
-        bubbles: true,
-    })
-};
-
-/**
- * Create a custom event for a knob to mirror its drawer.
- * @param from
- * @param to
- * @returns {CustomEvent<{from: *, to: *}>}
- */
-const makeKnobStateEvent = (from, to) => {
-    return new CustomEvent(`knobState`, {
-        detail: {
-            from: from,
-            to: to,
-        },
-        bubbles: false,
-    })
-};
-
 const drawerDefaults = {
+    /**
+     * This is passed to `sel()` to find any possible drawers. Keep in mind that
+     * it will then attach to *all* matches it finds.
+     *
+     * If items are added to the DOM after `setup()` has been run, you will need
+     * to run it again: It does not watch for new items being added.
+     */
     drawerSelector: `[data-module="drawer"]`,
+    /**
+     * This is a list of states the drawer can have. The names of the terms have
+     * no internal meaning: They will be used to populated `data-state` and will
+     * be matched against by `hiddenStates`, but they're essentially arbitrary.
+     *
+     * `cycle()` will move from the current state to the next state in this list,
+     * and then start again from the first item when it reaches the end.
+     */
     states: [
         `closed`,
         `opening`,
@@ -87,6 +54,14 @@ const drawerDefaults = {
         `closing`,
     ],
     initState: undefined, // This will default to the first state in the states array.
+    /**
+     * These are states from the `states` array that are considered "closed".
+     * Without other configuration, this means that when the drawer enters one
+     * of these states, it will receive the `hidden` attribute, and ann attached
+     * knobs will get `aria-expanded="false"`.
+     *
+     * To disable this behavior, just make this an empty array.
+     */
     hiddenStates: [
         `closed`,
     ],
@@ -150,8 +125,8 @@ function activateDrawer(el, settings) {
     el.drawer = {
         settings: ingestSettingsFromEl(el, settings),
         getState: getState.bind(el),
-        setState: requestStateChange.bind(el),
-        setHidden: requestHiddenChange.bind(el),
+        setState: state => el.dataset.state = state,
+        setHidden: yes => el.hidden = yes,
         addKnob: setupKnobsFromSelector.bind(el),
         cycle: cycle.bind(el),
     };
@@ -161,15 +136,35 @@ function activateDrawer(el, settings) {
         setupKnobs.bind(el)();
     }
 
-    // Handle all drawerState events.
-    el.addEventListener(`drawerState`, handleDrawerState.bind(el));
+    (new MutationObserver(drawerObserverCallback.bind(el))).observe(el, {
+        attributes: true,
+        attributeFilter: [`data-state`, `hidden`],
+        attributeOldValue: true,
+        childList: false,
+        subtree: false,
+    });
+}
 
-    // Handle all drawerHidden events.
-    el.addEventListener(`drawerHidden`, handleDrawerHidden.bind(el));
-
-    // Set initial state
-    el.drawer.setState(el.drawer.settings.initState);
-
+function drawerObserverCallback(mutationList, observer) {
+    for (let i = 0; i < mutationList.length; i++) {
+        const {
+            attributeName,
+            target: {
+                drawer: {
+                    settings: {
+                        hiddenStates
+                    },
+                    setHidden
+                },
+                dataset: {
+                    state
+                }
+            }
+        } = mutationList[i];
+        if (`data-state` === attributeName) {
+            setHidden(hiddenStates.indexOf(state) > -1);
+        }
+    }
 }
 
 function setupKnobs() {
@@ -204,34 +199,55 @@ function setupSingleKnob(el) {
             doCycle: settings.knobsCycle,
             actions: settings.knobActions,
             setAction: action => el.knob.actions.push(action),
-            drawers: [],
+            drawers: new Map(),
         };
     }
 
-    if (el.knob.drawers.indexOf(this) > -1) {
+    const {drawers, setAction} = el.knob;
+
+    if (drawers.has(this)) {
         return; // A knob can only be attached to a drawer once
     }
 
-    el.knob.setAction((e, knob) => {
-        knob.setAttribute(`aria-expanded`, e.detail.to === `open`);
+    // Store a reference to the drawer and it's observer
+    drawers.set(this, new MutationObserver(knobObserverCallback.bind(el)));
+
+    // Start observing
+    drawers.get(this).observe(this, {
+        attributes: true,
+        attributeFilter: [`data-states`, `hidden`],
+        attributeOldValue: true,
+        childList: false,
+        subtree: false,
     });
 
-    // Tell the drawer to dispatch events to this knob
-    this.addEventListener(`drawerState`, e => el.dispatchEvent(makeKnobStateEvent(e.detail.from, e.detail.to)));
+    const knobSetAriaExpandedBound = knobSetAriaExpanded.bind(el);
 
-    // Tell the knob to listen for events from itself
-    el.addEventListener(`knobState`, handleKnobState.bind(el));
+    // Check when set set up to make them match
+    knobSetAriaExpandedBound(this);
+
+    // Set up action to link aria-expanded state to drawer hidden state
+    setAction((list, knob, observer) => {
+        for (let i = 0; i < list.length; i++) {
+            const {target, attributeName} = list[i];
+            if (`hidden` === attributeName) {
+                knobSetAriaExpandedBound(target);
+            }
+        }
+    });
+
     el.addEventListener(`click`, handleKnobClick.bind(el));
-
-    // Store a reference to the drawer
-    el.knob.drawers.push(this);
 }
 
-function handleKnobState(e) {
+function knobSetAriaExpanded(drawer) {
+    this.setAttribute(`aria-expanded`, !drawer.hidden);
+}
+
+function knobObserverCallback(mutationList, observer) {
     const {actions} = this.knob;
     if (actions.length > 0) {
         actions
-            .map(action => action(e, this));
+            .map(action => action(mutationList, this, observer));
     }
 }
 
@@ -245,38 +261,10 @@ function handleKnobState(e) {
 function handleKnobClick() {
     const {doCycle, drawers} = this.knob;
     if (doCycle) {
-        drawers.map(d => d.drawer.cycle());
+        drawers.forEach((observer, drawer) => {
+            drawer.drawer.cycle();
+        });
     }
-}
-
-/**
- * Handle all drawerState events.
- * @param e
- */
-function handleDrawerState(e) {
-    if (e.target !== this) {
-        return; // Ignore all other drawers
-    }
-
-    const {settings, setHidden} = this.drawer;
-
-    // Set the state
-    this.dataset.state = e.detail.to;
-
-    // Set [hidden] if necessary
-    setHidden(settings.hiddenStates.indexOf(e.detail.to) > -1)
-}
-
-/**
- * Handle all drawerHidden events.
- * @param e
- */
-function handleDrawerHidden(e) {
-    if (e.target !== this) {
-        return; // Ignore all other drawers
-    }
-
-    this.hidden = Boolean(e.detail.to);
 }
 
 /**
@@ -315,25 +303,6 @@ function ingestSettingsFromEl(el, settings) {
  */
 function getState() {
     return this.dataset.state;
-}
-
-/**
- * Dispatch event that causes state change.
- * @param state
- */
-function requestStateChange(state) {
-    const {getState} = this.drawer;
-    const ev = makeStateEvent(getState(), state);
-    this.dispatchEvent(ev);
-}
-
-/**
- * Dispatch event that causes hidden attribute change.
- * @param yes
- */
-function requestHiddenChange(yes) {
-    const ev = makeHiddenEvent(Boolean(this.hidden), yes);
-    this.dispatchEvent(ev);
 }
 
 /**
