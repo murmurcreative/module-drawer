@@ -4,7 +4,7 @@
   "description": "Open things and close them as well.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "parcel demo/index.html"
   },
   "repository": {
     "type": "git",
