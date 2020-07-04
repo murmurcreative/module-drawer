@@ -269,13 +269,23 @@ function handleKnobClick() {
 
 /**
  * Cycle through all available states, looping around at the end of the array.
- * If there are only two states, this functions like a toggle.
+ * If it is passed an array of states
  */
-function cycle() {
+function cycle(states) {
     const {settings, getState, setState} = this.drawer;
     const curIndex = settings.states.indexOf(getState());
+    let nextState = settings.states[curIndex + 1] || settings.states[0];
 
-    setState(settings.states[curIndex + 1] || settings.states[0]);
+    // If states have been passed, cycle only through those
+    if (states) {
+        const potentialCustomState = states[states.indexOf(getState()) + 1] || states[0];
+        // Only allow valid states
+        if (settings.states.indexOf(potentialCustomState) > -1) {
+            nextState = potentialCustomState;
+        }
+    }
+
+    setState(nextState);
 }
 
 /**
