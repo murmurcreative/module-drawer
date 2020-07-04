@@ -60,6 +60,7 @@ Both `Drawer` and `Cabinet` take a second argument that can contain more specifi
 Passing an object to this argument will overwrite the defaults on a per-property basis.
 This is done using a shallow merge.
 
+[horizontal]
 `states`:: *Default:* `['closed', 'open']`
 +
 An array of strings.
