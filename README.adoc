@@ -32,7 +32,43 @@ Unfortunately it won't look like much, so please take a look at the link:#config
 == Configuration
 
 Both `Drawer` and `Cabinet` take a second argument that can contain more specific settings.
+Passing an object to this argument will overwrite the defaults on a per-property basis.
+This is done using a shallow merge.
 
+`states`:: *Default:* `['closed', 'open']`
++
+An array of strings.
+These are the states that appear in `data-state`.
+`cycle()` will move through them in order, one at a time, looping to the beginning once last row is reached.
+The strings themselves are essentially arbitrary.
+`initState`:: *Default:* `undefined` (effectively `states[0]`)
++
+The initial state.
+Must be a string from `states`.
+If nothing is defined here, then the first state in `states` will be used.
++
+Can be overridden by adding `data-state="state-name"` to the Drawer HTML.
+`hiddenStates`:: *Default:* `['closed']`
++
+An array of strings.
+When the Drawer is in a state listed here, it will be considered hidden and the `hidden` HTML attribute will be applied.
+If you don't ever want the drawer to be hidden, just set this to an empty array.
+`actions`:: *Default:* `[]`
++
+An array of callbacks, called when the Drawer observes its state changing.
+See link:#api[`addAction()`] for details on how to define actions.
+`knobs`:: *Default:* `[]`
++
+An array of elements or selectors that will be attached to this Drawer.
++
+Can be overridden by adding `data-knob="selector"` to the Drawer HTML.
+`knobsCycle`:: *Default:* `true`
++
+A boolean that determines whether or not clicking on a Knob will fire `cycle()` on its attached Drawers.
+`knobActions`:: *Default:* `[]`
++
+An array of callbacks, called when a Knob observes a state change on an attached Drawer.
+Callbacks receive arguments that are the mutation list, Knob DOM element, and Knob observer.
 
 [#instantiation]
 == Instantiation
