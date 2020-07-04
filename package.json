@@ -1,6 +1,6 @@
 {
   "name": "@murmurcreative/drawer",
-  "version": "2.0.0-dev",
+  "version": "2.0.0-alpha",
   "description": "Open things and close them as well.",
   "main": "index.js",
   "scripts": {
