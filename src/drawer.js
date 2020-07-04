@@ -120,12 +120,14 @@ function cycle(el, states) {
  * @returns {*}
  */
 function ingestSettingsFromEl(el, settings) {
+    const {state, knob} = el.dataset;
     let ingested = {};
+
     // data-state="initial state"
-    if (el.dataset.state) ingested.initState = el.dataset.state;
+    if (state && settings.states.indexOf(state) > -1) ingested.initState = state;
 
     // data-knob="knob selector"
-    if (el.dataset.knob) ingested.knobs = [el.dataset.knob];
+    if (knob) ingested.knobs = [knob];
 
     return merge(settings, ingested);
 }
