@@ -57,9 +57,9 @@ function setupSingleKnob(drawer, el) {
         subtree: false,
     });
 
-    // Check when set set up to make them match
+    // Set up all accessibility activity
     knobSetAriaExpanded(el, drawer);
-
+    knobSetAriaControls(el, drawer);
     // Set up action to link aria-expanded state to drawer hidden state
     addAction((list) => {
         for (let i = 0; i < list.length; i++) {
@@ -85,6 +85,12 @@ function setupSingleKnob(drawer, el) {
 function knobSetAriaExpanded(el, drawer) {
     if (el.knob.settings.accessibility) {
         el.setAttribute(`aria-expanded`, !drawer.hidden);
+    }
+}
+
+function knobSetAriaControls(el, drawer) {
+    if (el.knob.settings.accessibility) {
+        el.setAttribute(`aria-controls`, drawer.id);
     }
 }
 
