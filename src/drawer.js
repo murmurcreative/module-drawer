@@ -12,17 +12,15 @@ function Drawer(el, userSettings) {
         return; // Do nothing if called on non-element
     }
 
-    if (undefined === userSettings) {
-        userSettings = drawerDefaults();
-    }
+    const settings = drawerDefaults(userSettings);
 
     // Compute initState
-    if (undefined === userSettings.initState || userSettings.states.indexOf(userSettings.initState) < 0) {
-        userSettings.initState = userSettings.states[0];
+    if (undefined === settings.initState || settings.states.indexOf(settings.initState) < 0) {
+        settings.initState = settings.states[0];
     }
 
     Object.assign(this, {
-        settings: ingestSettingsFromEl(el, userSettings),
+        settings: ingestSettingsFromEl(el, settings),
         getState: () => getState(el),
         setState: state => setState(el, state),
         setHidden: hide => setHidden(el, hide),
