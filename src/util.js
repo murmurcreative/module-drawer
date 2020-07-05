@@ -45,4 +45,23 @@ const merge = (target, defaults) => {
     return Object.assign(Object.assign({}, target), defaults);
 };
 
-export {isEl, sel, merge}
+/**
+ * Generate a pretty unique ID.
+ *
+ * *IMPORTANT*
+ *
+ * This is intended to be pretty random, and fairly cryptographically
+ * secure, but if you really need that I'd recommend importing a package
+ * and using that; This is just a simple implementation so I can avoid
+ * a dependency.
+ *
+ * @link https://stackoverflow.com/a/2117523
+ * @returns {void | string | *}
+ */
+function uuid() {
+    return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+        (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+    );
+}
+
+export {isEl, sel, merge, uuid}
