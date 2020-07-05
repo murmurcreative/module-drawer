@@ -85,6 +85,10 @@ If you don't ever want the drawer to be hidden, just set this to an empty array.
 +
 An array of callbacks, called when the Drawer observes its state changing.
 See link:#api[`addAction()`] for details on how to define actions.
+`uuid`:: *Default:* `undefined`
++
+Drawer uses a simple internal function generate uuids.
+If you require something more crytographically secure, add a callback here that returns a uuid.
 `knobs`:: *Default:* `[]`
 +
 An array of elements or selectors that will be attached to this Drawer.
@@ -97,6 +101,12 @@ A boolean that determines whether or not clicking on a Knob will fire `cycle()` 
 +
 An array of callbacks, called when a Knob observes a state change on an attached Drawer.
 Callbacks receive arguments that are the mutation list, Knob DOM element, and Knob observer.
+`knobAccessibility`:: *Default:* `true`
++
+This enables (or disables) accessibility features.
+Generally you should not turn it off, but for some use cases
+(i.e. non-interactive knobs)
+it may be desirable to disable it, which you can do by passing `false`.
 
 [#instantiation]
 == Instantiation
@@ -106,13 +116,22 @@ Use this if you want to instantiate only a single, specific Drawer
 (i.e. a site navigation menu).
 +
 This returns an API object (see below) for the Drawer.
-- `new Cabinet(selector, settings)` - The `selector` argument is *required*, and must be either a valid selector
+- `new Cabinet(selector, settings)` - The `selector` must be either a valid selector
 (i.e. something `document.querySelectorAll()` understands)
 or a reference to a DOM element.
+If no `selector` is specified
+(or if `selector` is `undefined`)
+`Cabinet` will use the default selector, which is `[data-module="drawer"]`.
++
 Use this if you want to instantiate a bunch of Drawers at once with the same settings
 (i.e. an accordion).
 +
 This returns an array of API objects (see below).
++
+[NOTE]
+====
+Passing `undefined` to the first parameter of `Cabinet` will allow you to specify a settings object while still using the default selector.
+====
 
 [#api]
 == API
