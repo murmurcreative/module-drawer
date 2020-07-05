@@ -1,6 +1,7 @@
-:Date: 07/04/2020
+:Date: 07/05/2020
 :Author: Ben Martinez-Bateman
 :Email: ben@murmurcreative.com
+:Version: 2.1.0-alpha
 :toc: macro
 :toclevels: 3
 :toc-title:
@@ -31,9 +32,10 @@ toc::[]
 
 == Installation
 
+[subs="attributes"]
 [source,shell script]
 ----
-npm install @murmurcreative/drawer@2.0.0-alpha
+npm install @murmurcreative/drawer@{Version}
 ----
 
 [source,javascript]
