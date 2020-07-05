@@ -29,14 +29,16 @@ function setupSingleKnob(drawer, el) {
     if (!el.hasOwnProperty(`knob`)) {
         const {settings} = drawer.drawer;
         el.knob = {
-            doCycle: settings.knobsCycle,
-            actions: settings.knobActions,
-            drawers: new Map(),
-            addAction: action => el.knob.actions.push(action),
+            settings: {
+                doCycle: settings.knobsCycle,
+                actions: settings.knobActions,
+                drawers: new Map(),
+            },
+            addAction: action => el.knob.settings.actions.push(action),
         };
     }
 
-    const {drawers, addAction} = el.knob;
+    const {settings: {drawers}, addAction} = el.knob;
 
     if (drawers.has(drawer)) {
         return; // A knob can only be attached to a drawer once
@@ -91,7 +93,7 @@ function knobSetAriaExpanded(el, drawer) {
  * @param observer
  */
 function knobObserverCallback(el, mutationList, observer) {
-    const {actions} = el.knob;
+    const {actions} = el.knob.settings;
     if (actions.length > 0) {
         actions
             .map(action => action(mutationList, el, observer));
@@ -106,7 +108,7 @@ function knobObserverCallback(el, mutationList, observer) {
  * can be independently set per knob (manually).
  */
 function handleKnobClick(el) {
-    const {doCycle, drawers} = el.knob;
+    const {doCycle, drawers} = el.knob.settings;
     if (doCycle) {
         drawers.forEach((observer, drawer) => {
             drawer.drawer.cycle();
