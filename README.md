@@ -3,7 +3,7 @@
 Open and close things through simple state management.
 
 ```shell script
-npm install @murmurcreative/drawer@2.0.0-alpha
+npm install @murmurcreative/drawer@2.1.0-alpha
 ```
 
 ```javascript
