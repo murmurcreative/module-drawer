@@ -32,6 +32,7 @@ function setupSingleKnob(drawer, el) {
             settings: {
                 doCycle: settings.knobsCycle,
                 actions: settings.knobActions,
+                accessibility: settings.knobAccessibility,
                 drawers: new Map(),
             },
             addAction: action => el.knob.settings.actions.push(action),
@@ -82,7 +83,9 @@ function setupSingleKnob(drawer, el) {
  * @param drawer
  */
 function knobSetAriaExpanded(el, drawer) {
-    el.setAttribute(`aria-expanded`, !drawer.hidden);
+    if (el.knob.settings.accessibility) {
+        el.setAttribute(`aria-expanded`, !drawer.hidden);
+    }
 }
 
 /**

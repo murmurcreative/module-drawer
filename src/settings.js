@@ -54,5 +54,12 @@ export default settings => {
          * first argument, and the current knob as the second.
          */
         knobActions: [],
+        /**
+         * Whether or not to enable accessibility features on knobs.
+         * Generally this should be true, but for some knob use cases
+         * (i.e. non-interactive knobs) accessibility features may be
+         * unnecessary or problematic.
+         */
+        knobAccessibility: true,
     }, settings || {});
 };
