@@ -30,6 +30,11 @@ export default settings => {
          */
         actions: [],
         /**
+         * If you need better uuids, pass a callback to this function that
+         * generates them.
+         */
+        uuid: undefined,
+        /**
          * List of knobs to activate.
          *
          * We don't define any default knob selectors because it

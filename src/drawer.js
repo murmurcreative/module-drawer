@@ -1,4 +1,4 @@
-import {isEl, merge, sel} from "./util";
+import {isEl, merge, sel, uuid} from "./util";
 import drawerDefaults from "./settings";
 import {setupKnobsBySelector} from "./knob";
 
@@ -19,6 +19,12 @@ function Drawer(el, userSettings) {
         settings.initState = settings.states[0];
     }
 
+    // Set up uuid
+    settings.uuid = undefined === settings.uuid
+        ? uuid()
+        : settings.uuid();
+
+    // Build our API object
     Object.assign(this, {
         settings: ingestSettingsFromEl(el, settings),
         getState: () => getState(el),
@@ -32,6 +38,10 @@ function Drawer(el, userSettings) {
     // Since this is called with the `new` keyword, `this` is a fresh object,
     // which we want to store on the element at the API endpoint.
     el.drawer = this;
+
+    if (!el.id) {
+        el.id = el.drawer.settings.uuid;
+    }
 
     // Set up any knobs we're aware of
     const {addKnob, settings: {knobs}} = el.drawer;
