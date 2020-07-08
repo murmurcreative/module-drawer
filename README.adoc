@@ -154,7 +154,7 @@ If the `states` argument is undefined/not passed, then it will move to the next 
 If the `states` argument is an array of valid states
 (that is, states that also appear in the settings)
 then it will move to the next valid state in that array.
-See the link:src/drawer.js[function definition] for more information.
+See the link:src/drawer.ts[function definition] for more information.
 `addAction(action)`:: Add a callback that will be called when the Drawer detects a state change.
 The callback recieves the following arguments:
 ** `list` - An array of mutations detected.

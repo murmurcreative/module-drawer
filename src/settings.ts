@@ -1,4 +1,6 @@
-export default settings => {
+import {Settings} from "./types";
+
+function defaults(settings: Settings): Settings {
     return Object.assign({
         /**
          * This is a list of states the drawer can have. The names of the terms have
@@ -67,4 +69,6 @@ export default settings => {
          */
         knobAccessibility: true,
     }, settings || {});
-};
+}
+
+export {defaults, Settings}

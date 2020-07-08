@@ -3,7 +3,9 @@
   "version": "2.1.0-alpha",
   "description": "Open things and close them as well.",
   "main": "index.js",
-  "publishConfig": { "registry": "https://npm.pkg.github.com/" },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
   "scripts": {
     "dev": "parcel demo/index.html"
   },
@@ -19,7 +21,8 @@
   "homepage": "https://github.com/murmurcreative/module-drawer#readme",
   "devDependencies": {
     "husky": "^4.2.5",
-    "parcel-bundler": "^1.12.4"
+    "parcel-bundler": "^1.12.4",
+    "typescript": "^3.9.6"
   },
   "volta": {
     "node": "14.5.0"

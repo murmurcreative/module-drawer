@@ -1,5 +1,6 @@
 import {sel} from "./util";
 import {Drawer} from "./drawer";
+import {Settings} from "./types";
 
 
 /**
@@ -7,13 +8,13 @@ import {Drawer} from "./drawer";
  * @param selector
  * @param userSettings
  */
-function Cabinet(selector, userSettings) {
+function Cabinet(selector: HTMLElement | string, userSettings: Settings) {
     const drawers = sel(selector || `[data-module="drawer"]`);
     if (drawers.length < 1) {
         return; // There are no drawers
     }
 
-    return drawers.map(drawer => new Drawer(drawer, userSettings));
+    return drawers.map((drawer: HTMLElement) => new Drawer(drawer, userSettings));
 }
 
 export {Cabinet, Drawer}

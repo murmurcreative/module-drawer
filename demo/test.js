@@ -1,4 +1,4 @@
-import {Cabinet, Drawer} from "./../src";
+import {Cabinet, Drawer} from "../src";
 
 console.log(new Cabinet());
 

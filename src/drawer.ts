@@ -1,18 +1,19 @@
 import {isEl, merge, sel, uuid} from "./util";
-import drawerDefaults from "./settings";
+import {defaults} from "./settings";
 import {setupKnobsBySelector} from "./knob";
+import {Drawer, DrawerAPI, IngestedSettings, Settings} from "./types";
 
 /**
  * Activate a drawer.
  * @param el
  * @param userSettings
  */
-function Drawer(el, userSettings) {
+function Drawer(el: Drawer, userSettings?: Settings) {
     if (!isEl(el)) {
         return; // Do nothing if called on non-element
     }
 
-    const settings = drawerDefaults(userSettings);
+    const settings = defaults(userSettings);
 
     // Compute initState
     if (undefined === settings.initState || settings.states.indexOf(settings.initState) < 0) {
@@ -21,11 +22,9 @@ function Drawer(el, userSettings) {
 
     // Set up uuid
     settings.uuid = undefined === settings.uuid
-        ? uuid()
-        : settings.uuid();
-
-    // Build our API object
-    Object.assign(this, {
+        ? uuid
+        : settings.uuid;
+    const api = <DrawerAPI>{
         settings: ingestSettingsFromEl(el, settings),
         getState: () => getState(el),
         setState: state => setState(el, state),
@@ -33,14 +32,17 @@ function Drawer(el, userSettings) {
         addKnob: knob => setupKnobsBySelector(el, knob),
         addAction: action => el.drawer.settings.actions.push(action),
         cycle: states => cycle(el, states),
-    });
+    };
+
+    // Build our API object
+    Object.assign(this, api);
 
     // Since this is called with the `new` keyword, `this` is a fresh object,
     // which we want to store on the element at the API endpoint.
     el.drawer = this;
 
     if (!el.id) {
-        el.id = el.drawer.settings.uuid;
+        el.id = el.drawer.settings.uuid();
     }
 
     // Set up any knobs we're aware of
@@ -54,22 +56,24 @@ function Drawer(el, userSettings) {
 
     // Couple state to hidden attribute
     const {addAction} = el.drawer;
-    addAction(list => {
+    addAction((list: Array<MutationRecord>) => {
         for (let i = 0; i < list.length; i++) {
             const {
                 attributeName,
-                target: {
-                    drawer: {
-                        settings: {
-                            hiddenStates
-                        },
-                        setHidden
-                    },
-                    dataset: {
-                        state
-                    }
-                }
+                target,
             } = list[i];
+
+            const {
+                drawer: {
+                    settings: {
+                        hiddenStates
+                    },
+                    setHidden
+                },
+                dataset: {
+                    state
+                }
+            } = <Drawer>target;
 
             if (`data-state` === attributeName) {
                 setHidden(hiddenStates.indexOf(state) > -1);
@@ -78,7 +82,7 @@ function Drawer(el, userSettings) {
     });
 
     // Start observing this drawer
-    (new MutationObserver((list, observer) => drawerObserverCallback(el, list, observer))).observe(el, {
+    (new MutationObserver((list: Array<MutationRecord>, observer: MutationObserver) => drawerObserverCallback(el, list, observer))).observe(el, {
         attributes: true,
         attributeFilter: [`data-state`, `hidden`],
         attributeOldValue: true,
@@ -93,7 +97,7 @@ function Drawer(el, userSettings) {
  * @param list
  * @param observer
  */
-function drawerObserverCallback(el, list, observer) {
+function drawerObserverCallback(el: Drawer, list: Array<MutationRecord>, observer: MutationObserver) {
     const {settings: {actions}} = el.drawer;
     for (let i = 0; i < actions.length; i++) {
         actions[i](list, el, observer);
@@ -104,7 +108,7 @@ function drawerObserverCallback(el, list, observer) {
  * Cycle through all available states, looping around at the end of the array.
  * If it is passed an array of states
  */
-function cycle(el, states) {
+function cycle(el: Drawer, states?: Array<string>) {
     const {settings, getState, setState} = el.drawer;
     const curIndex = settings.states.indexOf(getState());
     let nextState = settings.states[curIndex + 1] || settings.states[0];
@@ -129,15 +133,15 @@ function cycle(el, states) {
  * @param settings
  * @returns {*}
  */
-function ingestSettingsFromEl(el, settings) {
+function ingestSettingsFromEl(el: HTMLElement, settings: Settings) {
     const {state, knob} = el.dataset;
-    let ingested = {};
+    let ingested: IngestedSettings = {};
 
     // data-state="initial state"
-    if (state && settings.states.indexOf(state) > -1) ingested.initState = state;
+    if (state && settings.states.indexOf(state) > -1) ingested['initState'] = state;
 
     // data-knob="knob selector"
-    if (knob) ingested.knobs = [knob];
+    if (knob) ingested['knobs'] = [knob];
 
     return merge(settings, ingested);
 }
@@ -146,7 +150,7 @@ function ingestSettingsFromEl(el, settings) {
  * Get the state (i.e. open or closed).
  * @returns {string}
  */
-function getState(el) {
+function getState(el: Drawer) {
     return el.dataset.state;
 }
 
@@ -155,7 +159,7 @@ function getState(el) {
  * @param el
  * @param state
  */
-function setState(el, state) {
+function setState(el: Drawer, state: string) {
     el.dataset.state = state;
 }
 
@@ -164,7 +168,7 @@ function setState(el, state) {
  * @param el
  * @param hide
  */
-function setHidden(el, hide) {
+function setHidden(el: Drawer, hide: boolean) {
     el.hidden = hide;
 }
 
