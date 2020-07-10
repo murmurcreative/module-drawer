@@ -1,7 +1,10 @@
+import polyfill from "./polyfills";
 import {sel} from "./util";
 import {Drawer} from "./drawer";
 import {Settings} from "./types";
 
+// Set up our polyfills before we do anything else
+polyfill();
 
 /**
  * Set up all drawers we can find.

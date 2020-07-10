@@ -1,4 +1,4 @@
-import {isEl, merge, sel, uuid} from "./util";
+import {flattenSingle, isEl, merge, sel, uuid} from "./util";
 import {defaults} from "./settings";
 import {setupKnobsBySelector} from "./knob";
 import {Drawer, DrawerAPI, IngestedSettings, Settings} from "./types";
@@ -48,9 +48,7 @@ function Drawer(el: Drawer, userSettings?: Settings) {
     // Set up any knobs we're aware of
     const {addKnob, settings: {knobs}} = el.drawer;
     if (knobs) {
-        knobs
-            .map(sel)   // This allows describing knobs as elements *or* selector strings
-            .flat()     // sel returns arrays of items, so flatten everything
+        flattenSingle(knobs.map(sel))
             .map(addKnob);
     }
 
