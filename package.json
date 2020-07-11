@@ -7,7 +7,28 @@
     "registry": "https://npm.pkg.github.com/"
   },
   "scripts": {
-    "dev": "parcel demo/index.html"
+    "dev": "parcel demo/index.html",
+    "test": "jest tests/"
+  },
+  "babel": {
+    "env": {
+      "test": {
+        "plugins": [
+          "@babel/plugin-transform-modules-commonjs"
+        ]
+      }
+    },
+    "presets": [
+      [
+        "@babel/preset-env",
+        {
+          "targets": {
+            "node": "current"
+          }
+        }
+      ],
+      "@babel/preset-typescript"
+    ]
   },
   "repository": {
     "type": "git",
@@ -20,7 +41,11 @@
   },
   "homepage": "https://github.com/murmurcreative/module-drawer#readme",
   "devDependencies": {
+    "@babel/preset-typescript": "^7.10.4",
     "husky": "^4.2.5",
+    "is-uuid": "^1.0.2",
+    "jest": "^26.1.0",
+    "mocha": "^8.0.1",
     "parcel-bundler": "^1.12.4",
     "typescript": "^3.9.6"
   },
