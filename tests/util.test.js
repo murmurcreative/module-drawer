@@ -1,18 +1,18 @@
 import {flattenSingle, isEl, merge, sel, uuid} from '../src/util';
+import {expect} from "@jest/globals";
+
+// Set up an element for testing
+const element = document.createElement('div');
+element.id = 'element';
+element.setAttribute('class', 'element-class');
+document.body.insertBefore(element, null);
 
 test("An element is an element", () => {
-    const element = document.createElement('div');
-    element.id = 'element';
-    document.body.insertBefore(element, null);
     expect(isEl(document.getElementById('element'))).toBe(true);
     expect(isEl('string')).toBe(false);
 });
 
 test("sel() always returns an array", () => {
-    const element = document.createElement('div');
-    element.id = 'element';
-    element.classList.add('element-class');
-    document.body.insertBefore(element, null);
     expect(Array.isArray(sel('#element'))).toBe(true);
     expect(Array.isArray(sel('.element-class'))).toBe(true);
     expect(Array.isArray(sel('div'))).toBe(true);
@@ -22,10 +22,6 @@ test("sel() always returns an array", () => {
 });
 
 test("sel() returns correct elements", () => {
-    let element = document.createElement('div');
-    element.id = 'element';
-    element.setAttribute('class', 'element-class');
-    document.body.insertBefore(element, null);
     const getEl = document.getElementById('element');
     expect(sel('#element')).toContain(getEl);
     expect(sel('.element-class')).toContain(getEl);
