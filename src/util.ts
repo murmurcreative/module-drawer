@@ -19,12 +19,12 @@ const sel = (el: any): Array<HTMLElement> => {
     if (isEl(el)) return [el];
     // Not an arg we understand
     if (typeof el !== `string`) return [];
-    // ID argument, use faster search
-    if (idRegex.test(el)) return [document.getElementById(el.slice(1))];
     // Tag argument, use faster search
     if (tagRegex.test(el)) return Array.prototype.slice.call(document.getElementsByTagName(el));
+    // ID argument, use faster search
+    if (idRegex.test(el)) return [document.getElementById(el.slice(1))];
     // Class argument, use faster search
-    if (classRegex.test(el)) return Array.prototype.slice.call(document.getElementsByClassName(el));
+    if (classRegex.test(el)) return Array.prototype.slice.call(document.getElementsByClassName(el.slice(1)));
     // Just use querySelectorAll
     return Array.prototype.slice.call(document.querySelectorAll(el));
 };
