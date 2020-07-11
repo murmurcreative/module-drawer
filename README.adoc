@@ -24,6 +24,8 @@ endif::[]
 
 = Drawer
 
+image:https://github.com/murmurcreative/module-drawer/workflows/Node.js%20CI/badge.svg?branch=tests[Node.js CI]
+
 *Broadly:* Open things and close them as well.
 
 *Technically:* Swap states on a particular element.

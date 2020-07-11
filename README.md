@@ -1,5 +1,7 @@
 # Drawer
 
+![Node.js CI](https://github.com/murmurcreative/module-drawer/workflows/Node.js%20CI/badge.svg?branch=tests)
+
 Open and close things through simple state management.
 
 ```shell script
