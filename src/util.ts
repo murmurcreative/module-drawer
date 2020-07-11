@@ -3,7 +3,7 @@
  * @param el
  * @returns {boolean}
  */
-const isEl = el => el instanceof Element || el instanceof HTMLDocument;
+const isEl = (el: any): boolean => (el instanceof Element) || (el instanceof HTMLDocument);
 
 const tagRegex = /^\w*.$/;
 const idRegex = /^#[\w_-]*.$/;
@@ -12,9 +12,9 @@ const classRegex = /^\.[\w_-]*.$/;
 /**
  * Get an array of elements matching a string, or return an element passed.
  * @param el
- * @returns {array}
+ * @returns {HTMLElement[]}
  */
-const sel = el => {
+const sel = (el: any): Array<HTMLElement> => {
     // Return immediately, but in an array
     if (isEl(el)) return [el];
     // Not an arg we understand
@@ -39,9 +39,9 @@ const sel = el => {
  * logic needs to become more detail (i.e. a deeper merge).
  * @param target
  * @param defaults
- * @returns {*}
+ * @returns {object}
  */
-const merge = (target, defaults) => {
+const merge = (target: object, defaults: object): object => {
     return Object.assign(Object.assign({}, target), defaults);
 };
 
@@ -50,8 +50,9 @@ const merge = (target, defaults) => {
  *
  * This is to handle browsers (i.e. IE) that don't support .flat().
  * @param arr
+ * @return {any[]}
  */
-const flattenSingle = (arr: Array<any>) => arr.reduce((acc, val) => acc.concat(val), []);
+const flattenSingle = (arr: Array<any>): Array<any> => arr.reduce((acc, val) => acc.concat(val), []);
 
 /**
  * Generate a pretty unique ID.
@@ -64,10 +65,10 @@ const flattenSingle = (arr: Array<any>) => arr.reduce((acc, val) => acc.concat(v
  * a dependency.
  *
  * @link https://stackoverflow.com/a/2117523
- * @returns {void | string | *}
+ * @returns {string}
  */
-function uuid() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+function uuid(): string {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
         var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
     });
