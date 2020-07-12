@@ -55,25 +55,7 @@ function Drawer(el: DrawerElement, userSettings?: Settings): DrawerAPI {
     }
 
     // Couple state to hidden attribute
-    const {addAction} = el.drawer;
-    addAction((list: Array<MutationRecord>) => {
-        for (let i = 0; i < list.length; i++) {
-            const {
-                attributeName,
-                target,
-            } = list[i];
-
-            const {
-                drawer: {
-                    settings: {
-                        hiddenStates
-                    },
-                    setHidden
-                },
-                dataset: {
-                    state
-                }
-            } = <DrawerElement>target;
+    api.addAction(hiddenCallback);
 
             if (`data-state` === attributeName) {
                 setHidden(hiddenStates.indexOf(state) > -1);
@@ -93,6 +75,35 @@ function Drawer(el: DrawerElement, userSettings?: Settings): DrawerAPI {
     // Set the initial state, if it differs from the current one
     if (this.settings.initState !== api.getState()) {
         api.setState(this.settings.initState);
+    }
+}
+
+/**
+ * Set up hidden behavior.
+ * @param list
+ */
+function hiddenCallback(list): void {
+    for (let i = 0; i < list.length; i++) {
+        const {
+            attributeName,
+            target,
+        } = list[i];
+
+        const {
+            drawer: {
+                settings: {
+                    hiddenStates
+                },
+                setHidden
+            },
+            dataset: {
+                state
+            }
+        } = <DrawerElement>target;
+
+        if (`data-state` === attributeName) {
+            setHidden(hiddenStates.indexOf(state) > -1);
+        }
     }
 }
 
