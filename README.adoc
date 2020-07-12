@@ -299,6 +299,21 @@ then `MutationRecord.oldValue` will be `undefined`.
 This can be a good way to know when an action is being run for the first time, although there is no guarantee this is the case.
 ====
 
+When adding actions to a drawer, you are encouraged to write named functions and then pass those as callbacks, rather than using anonymous/arrow functions.
+This makes it easier to identify and potentially modify the actions assigned to a Drawer or Knob.
+
+[source,javascript]
+----
+// good
+function doSomeAction(list, el, observer) {
+    // do something
+}
+drawerAPI.addAction(doSomeAction);
+
+// later we could easily remove this action
+drawerAPI.settings = drawerAPI.settings.filter(action => action.name !== 'doSomeAction');
+----
+
 == Further Reading
 Drawer is several dozen lines of code that manage, essentially, one thing:
 
