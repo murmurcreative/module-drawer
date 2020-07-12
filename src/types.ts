@@ -16,6 +16,7 @@ interface IngestedSettings {
 }
 
 interface DrawerAPI {
+    real: boolean;
     settings: Settings;
     getState: () => string;
     setState: (state: string) => void;

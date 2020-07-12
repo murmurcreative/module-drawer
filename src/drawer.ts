@@ -8,8 +8,9 @@ import {DrawerElement, DrawerAPI, IngestedSettings, Settings} from "./types";
  * @param el
  * @param userSettings
  */
-function Drawer(el: DrawerElement, userSettings?: Settings) {
+function Drawer(el: DrawerElement, userSettings?: Settings): DrawerAPI {
     if (!isEl(el)) {
+        this.real = false;
         return; // Do nothing if called on non-element
     }
 
@@ -25,6 +26,7 @@ function Drawer(el: DrawerElement, userSettings?: Settings) {
         ? uuid
         : settings.uuid;
     const api = <DrawerAPI>{
+        real: true,
         settings: ingestSettingsFromEl(el, settings),
         getState: () => getState(el),
         setState: state => setState(el, state),
