@@ -72,7 +72,7 @@ function Drawer(el: DrawerElement, userSettings?: Settings): DrawerAPI {
     // Set up hash actions
     api.addAction(hashCallback);
 
-// Start observing this drawer
+    // Start observing this drawer
     (new MutationObserver((list: Array<MutationRecord>, observer: MutationObserver) => drawerObserverCallback(el, list, observer))).observe(el, {
         attributes: true,
         attributeFilter: [`data-state`, `hidden`],
@@ -81,18 +81,19 @@ function Drawer(el: DrawerElement, userSettings?: Settings): DrawerAPI {
         subtree: false,
     });
 
-// Set the initial state, if it differs from the current one
+    // If there's a matching hash, set the hashState as the initState
+    if (extractHash().length > 0) {
+        const hash = extractHash();
+        if (isValidHash(hash) && api.getHash() === hash && api.getHashState().length > 0) {
+            this.settings.initState = api.getHashState();
+        }
+    }
+
+    // Set the initial state, if it differs from the current one
     if (this.settings.initState !== api.getState()) {
         api.setState(this.settings.initState);
     }
 
-    // If there's a matching hash, activate it
-    if (extractHash().length > 0) {
-        const hash = extractHash();
-        if (isValidHash(hash) && api.getHash() === hash && api.getHashState().length > 0) {
-            api.setState(api.getHashState());
-        }
-    }
 }
 
 /**
@@ -141,6 +142,7 @@ function hashCallback(list: Array<MutationRecord>): void {
         }
     }
 }
+
 /**
  * Called whenever the drawer observes a mutation change.
  * @param el
