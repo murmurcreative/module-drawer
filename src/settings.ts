@@ -27,6 +27,20 @@ function defaults(settings: Settings): Settings {
             `closed`,
         ],
         /**
+         * The hash will be appended to the URL when the Drawer is in the state
+         * described in hashState. If hash is not a string with a length greater
+         * than one, all hash functionality is disabled. If hash is valid, but
+         * hashState is not, then the de facto hash-state will be the first non-
+         * hidden state found in states.
+         */
+        hash: '',
+        /**
+         * When this state is active on the drawer, the hash will be added to the
+         * url, and this state will be activated if the hash is in the URL. If
+         * this is set but hash is not valid, nothing will happen.
+         */
+        hashState: '',
+        /**
          * Functions to be run when the drawer observes a change it its
          * state or hidden attribute.
          */

@@ -1,7 +1,8 @@
-import {flattenSingle, isEl, merge, sel, uuid} from "./util";
+import {flattenSingle, isEl, merge, sel, urlify, uuid} from "./util";
 import {defaults} from "./settings";
 import {setupKnobsBySelector} from "./knob";
 import {DrawerElement, DrawerAPI, IngestedSettings, Settings} from "./types";
+import {clearHash, extractHash, ifValidHash, isValidHash, setHash, wipeHash} from "./hash";
 
 /**
  * Activate a drawer.
@@ -21,6 +22,12 @@ function Drawer(el: DrawerElement, userSettings?: Settings): DrawerAPI {
         settings.initState = settings.states[0];
     }
 
+    // Compute hashState
+    if (!isValidHash(settings.hashState) || settings.states.indexOf(settings.hashState) < 0) {
+        const nonHiddenStates = settings.states.filter(x => !settings.hiddenStates.includes(x));
+        settings.hashState = nonHiddenStates[0] || '';
+    }
+
     // Set up uuid
     settings.uuid = undefined === settings.uuid
         ? uuid
@@ -31,6 +38,11 @@ function Drawer(el: DrawerElement, userSettings?: Settings): DrawerAPI {
         getState: () => getState(el),
         setState: state => setState(el, state),
         setHidden: hide => setHidden(el, hide),
+        getHash: () => el.drawer.settings.hash,
+        getHashState: () => el.drawer.settings.hashState,
+        setHash: () => ifValidHash(el.drawer.getHash(), setHash),
+        clearHash: () => ifValidHash(el.drawer.getHash(), clearHash),
+        wipeHash: wipeHash,
         addKnob: knob => setupKnobsBySelector(el, knob),
         addAction: action => el.drawer.settings.actions.push(action),
         cycle: states => cycle(el, states),
@@ -57,13 +69,10 @@ function Drawer(el: DrawerElement, userSettings?: Settings): DrawerAPI {
     // Couple state to hidden attribute
     api.addAction(hiddenCallback);
 
-            if (`data-state` === attributeName) {
-                setHidden(hiddenStates.indexOf(state) > -1);
-            }
-        }
-    });
+    // Set up hash actions
+    api.addAction(hashCallback);
 
-    // Start observing this drawer
+// Start observing this drawer
     (new MutationObserver((list: Array<MutationRecord>, observer: MutationObserver) => drawerObserverCallback(el, list, observer))).observe(el, {
         attributes: true,
         attributeFilter: [`data-state`, `hidden`],
@@ -72,9 +81,17 @@ function Drawer(el: DrawerElement, userSettings?: Settings): DrawerAPI {
         subtree: false,
     });
 
-    // Set the initial state, if it differs from the current one
+// Set the initial state, if it differs from the current one
     if (this.settings.initState !== api.getState()) {
         api.setState(this.settings.initState);
+    }
+
+    // If there's a matching hash, activate it
+    if (extractHash().length > 0) {
+        const hash = extractHash();
+        if (isValidHash(hash) && api.getHash() === hash && api.getHashState().length > 0) {
+            api.setState(api.getHashState());
+        }
     }
 }
 
@@ -107,6 +124,23 @@ function hiddenCallback(list): void {
     }
 }
 
+/**
+ * Set up hash behavior.
+ * @param list
+ */
+function hashCallback(list: Array<MutationRecord>): void {
+    for (let i = 0; i < list.length; i++) {
+        const {attributeName, target} = list[i];
+        const {drawer: {setHash, clearHash, settings: {hashState}}, dataset: {state}} = <DrawerElement>target;
+        if (`data-state` === attributeName) {
+            if (state === hashState) {
+                setHash();
+            } else {
+                clearHash();
+            }
+        }
+    }
+}
 /**
  * Called whenever the drawer observes a mutation change.
  * @param el
@@ -150,14 +184,25 @@ function cycle(el: DrawerElement, states?: Array<string>) {
  * @returns {*}
  */
 function ingestSettingsFromEl(el: HTMLElement, settings: Settings) {
-    const {state, knob} = el.dataset;
+    const {state, knob, hash, hashState} = el.dataset;
     let ingested: IngestedSettings = {};
 
     // data-state="initial state"
-    if (state && settings.states.indexOf(state) > -1) ingested['initState'] = state;
+    if (state
+        && settings.states.indexOf(state) > -1 // is valid state
+    ) ingested['initState'] = state;
 
     // data-knob="knob selector"
     if (knob) ingested['knobs'] = [knob];
+
+    // data-hash="hash-string"
+    if (hash !== undefined) ingested['hash'] = urlify(hash);
+
+    // data-hashState="state"
+    if (hashState
+        && settings.states.indexOf(hashState) > -1 // is valid state
+        && settings.hiddenStates.indexOf(hashState) < 0 // is not a hidden state
+    ) ingested['hashStates'] = hashState;
 
     return merge(settings, ingested);
 }

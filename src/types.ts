@@ -1,6 +1,8 @@
 interface Settings {
     states?: Array<string>;
     initState?: string;
+    hash?: string;
+    hashState?: string;
     hiddenStates?: Array<string>;
     actions?: Array<(list: Array<MutationRecord>, el: HTMLElement, observer: MutationObserver) => void>;
     uuid?: () => string;
@@ -21,6 +23,11 @@ interface DrawerAPI {
     getState: () => string;
     setState: (state: string) => void;
     setHidden: (hide: boolean) => void;
+    getHash: () => string;
+    getHashState: () => string;
+    setHash: () => void;
+    clearHash: () => void;
+    wipeHash: () => void;
     addKnob: (knob: HTMLElement) => void;
     addAction: (action: Action) => void;
     cycle: (states?: Array<string>) => void;
