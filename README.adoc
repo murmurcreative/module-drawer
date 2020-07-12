@@ -221,6 +221,55 @@ new Drawer(document.querySelector(`.drawer`));
 <button data-controls="drawer"> Toggle </button>
 ----
 
+[#actions]
+== Actions
+
+Actions are an important part of how we interact with drawers and knobs.
+In both cases, actions have an essentially identical signature:
+
+. `list`
++
+This is an array of link:https://developer.mozilla.org/en-US/docs/Web/API/MutationRecord[MutationRecords], each of which describes an observed mutation change.
+For most actions, you will be primarily concerned with these items, because they tell you what has just happened.
+. `el`
++
+The element that this action is attached to:
+A Knob or a Drawer.
+Notably this is *not* the element that is being observed;
+if you want that element it can be found in `MutationRecord.target`.
+This element is made available in the event that you want it to react to the mutation.
+. `observer`
++
+The observer that observed this mutation.
+In most cases you won't need this, but it some situations it may be useful,
+i.e. if you want to respond to a particular mutation by ceasing to observe.
+
+The MutationObservers here are limited:
+Both watch only for changes to the `data-state` and `hidden` attributes on drawers, and only on the element itself
+(children are ignored).
+However, sometimes both will trigger at the same time, i.e. if the Drawer moves into a hidden state.
+`MutationRecord.attributeName` will tell you which particular attribute generated a particular MutationRecord.
+`MutationRecord.oldValue` will tell you what the attribute mutated _from_.
+The MutationRecord itself doesn't contain the current value, but you can easily get it from `MutationRecord.target`:
+
+[source,javascript]
+----
+function someAction(list) {
+    list.map(record => {
+        console.log(record.target.getAttribute(record.attributeName));
+    })
+}
+----
+
+[NOTE]
+====
+If `settings.initState` differs from the state set on the Drawer at instantiation, the Drawer will fire an action as the states are brought into alignment.
+If the Drawer had no state before instantiation
+(i.e. it had no `data-state` attribute)
+then `MutationRecord.oldValue` will be `undefined`.
+This can be a good way to know when an action is being run for the first time, although there is no guarantee this is the case.
+====
+
 == Further Reading
 Drawer is several dozen lines of code that manage, essentially, one thing:
 
