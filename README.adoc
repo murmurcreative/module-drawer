@@ -83,6 +83,32 @@ Can be overridden by adding `data-state="state-name"` to the Drawer HTML.
 An array of strings.
 When the Drawer is in a state listed here, it will be considered hidden and the `hidden` HTML attribute will be applied.
 If you don't ever want the drawer to be hidden, just set this to an empty array.
+`hash`:: *Default:* `''` (empty string)
++
+If set, this is a string that will be appended to the URL as a `#hash` when the Drawer's state matches the `hashState`.
+If there is already a matching hash in the URL when the Drawer is instantiated, it will be immediately put into that state, regardless of any other settings.
++
+[NOTE]
+====
+Mechanically it does this by overriding your `initState` with the `hashState`, which will remain the `initState` for the life of that Drawer
+(unless manually changed).
+====
++
+Can be overridden by adding `data-hash="hash-string"` to the Drawer HTML.
+`hashState`:: *Default:* `''` (empty string)
++
+The state that should correspond to your `hash`.
+This must be a valid state
+(i.e. it must be in `states`)
+and it cannot be a "hidden" state
+(i.e. it _cannot_ be in `hiddenStates`).
+`hashStates` that do not meet this criteria will be ignored.
++
+If there is no valid `hash` set, this setting will have no effect.
++
+If `hash` is valid but `hashState` is not, the Drawer will use the first non-hidden state it can find in `states`.
++
+Can be overridden by adding `data-hashState="state"` to the Drawer HTML.
 `actions`:: *Default:* `[]`
 +
 An array of callbacks, called when the Drawer observes its state changing.
@@ -90,7 +116,7 @@ See link:#api[`addAction()`] for details on how to define actions.
 `uuid`:: *Default:* `undefined`
 +
 Drawer uses a simple internal function generate uuids.
-If you require something more crytographically secure, add a callback here that returns a uuid.
+If you require something more cryptographically secure, add a callback here that returns a uuid.
 `knobs`:: *Default:* `[]`
 +
 An array of elements or selectors that will be attached to this Drawer.
