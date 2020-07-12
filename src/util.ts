@@ -55,6 +55,21 @@ const merge = (target: object, defaults: object): object => {
 const flattenSingle = (arr: Array<any>): Array<any> => arr.reduce((acc, val) => acc.concat(val), []);
 
 /**
+ * Attempts to make something (usually a string) in a url-safe string.
+ *
+ * @param string
+ * @return string
+ */
+const urlify = (string: any): string => string
+    .toString()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
+
+/**
  * Generate a pretty unique ID.
  *
  * *IMPORTANT*
@@ -74,4 +89,4 @@ function uuid(): string {
     });
 }
 
-export {isEl, sel, merge, flattenSingle, uuid}
+export {isEl, sel, merge, flattenSingle, urlify, uuid}
