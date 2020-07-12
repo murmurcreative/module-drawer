@@ -65,25 +65,24 @@ Passing an object to this argument will overwrite the defaults on a per-property
 This is done using a shallow merge.
 
 [horizontal]
-`states`:: *Default:* `['closed', 'open']`
+`states`:: _Array<string>_ | *Default:* `['closed', 'open']`
 +
-An array of strings.
 These are the states that appear in `data-state`.
 `cycle()` will move through them in order, one at a time, looping to the beginning once last row is reached.
 The strings themselves are essentially arbitrary.
-`initState`:: *Default:* `undefined` (effectively `states[0]`)
+`initState`:: _string_ | *Default:* `undefined` (effectively `states[0]`)
 +
 The initial state.
 Must be a string from `states`.
 If nothing is defined here, then the first state in `states` will be used.
 +
 Can be overridden by adding `data-state="state-name"` to the Drawer HTML.
-`hiddenStates`:: *Default:* `['closed']`
+`hiddenStates`:: _Array<string>_ | *Default:* `['closed']`
 +
 An array of strings.
 When the Drawer is in a state listed here, it will be considered hidden and the `hidden` HTML attribute will be applied.
 If you don't ever want the drawer to be hidden, just set this to an empty array.
-`hash`:: *Default:* `''` (empty string)
+`hash`:: _string_ | *Default:* `''` (empty string)
 +
 If set, this is a string that will be appended to the URL as a `#hash` when the Drawer's state matches the `hashState`.
 If there is already a matching hash in the URL when the Drawer is instantiated, it will be immediately put into that state, regardless of any other settings.
@@ -95,7 +94,7 @@ Mechanically it does this by overriding your `initState` with the `hashState`, w
 ====
 +
 Can be overridden by adding `data-hash="hash-string"` to the Drawer HTML.
-`hashState`:: *Default:* `''` (empty string)
+`hashState`:: _string_ | *Default:* `''` (empty string)
 +
 The state that should correspond to your `hash`.
 This must be a valid state
@@ -109,27 +108,27 @@ If there is no valid `hash` set, this setting will have no effect.
 If `hash` is valid but `hashState` is not, the Drawer will use the first non-hidden state it can find in `states`.
 +
 Can be overridden by adding `data-hashState="state"` to the Drawer HTML.
-`actions`:: *Default:* `[]`
+`actions`:: _Array<Function>_ | *Default:* `[]`
 +
 An array of callbacks, called when the Drawer observes its state changing.
 See link:#api[`addAction()`] for details on how to define actions.
-`uuid`:: *Default:* `undefined`
+`uuid`:: _Function_ | *Default:* `undefined`
 +
 Drawer uses a simple internal function generate uuids.
 If you require something more cryptographically secure, add a callback here that returns a uuid.
-`knobs`:: *Default:* `[]`
+`knobs`:: _Array<HTMLElement|string>_ | *Default:* `[]`
 +
 An array of elements or selectors that will be attached to this Drawer.
 +
 Can be overridden by adding `data-knob="selector"` to the Drawer HTML.
-`knobsCycle`:: *Default:* `true`
+`knobsCycle`:: _boolean_ | *Default:* `true`
 +
 A boolean that determines whether or not clicking on a Knob will fire `cycle()` on its attached Drawers.
-`knobActions`:: *Default:* `[]`
+`knobActions`:: _Array<Function>_ | *Default:* `[]`
 +
 An array of callbacks, called when a Knob observes a state change on an attached Drawer.
 Callbacks receive arguments that are the mutation list, Knob DOM element, and Knob observer.
-`knobAccessibility`:: *Default:* `true`
+`knobAccessibility`:: _boolean_ | *Default:* `true`
 +
 This enables (or disables) accessibility features.
 Generally you should not turn it off, but for some use cases
