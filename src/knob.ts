@@ -1,5 +1,5 @@
 import {sel} from "./util";
-import {Drawer, Knob, KnobAction, KnobSettings} from "./types";
+import {DrawerElement, KnobElement, KnobAction, KnobSettings} from "./types";
 
 /**
  * This is a sort of intermediary function: Because `sel()` always returns
@@ -9,7 +9,7 @@ import {Drawer, Knob, KnobAction, KnobSettings} from "./types";
  * @param drawer
  * @param selector
  */
-function setupKnobsBySelector(drawer: Drawer, selector: HTMLElement | string) {
+function setupKnobsBySelector(drawer: DrawerElement, selector: HTMLElement | string) {
     const array = sel(selector);
 
     if (array.length < 1) {
@@ -25,7 +25,7 @@ function setupKnobsBySelector(drawer: Drawer, selector: HTMLElement | string) {
  * @param drawer
  * @param el
  */
-function setupSingleKnob(drawer: Drawer, el: Knob) {
+function setupSingleKnob(drawer: DrawerElement, el: KnobElement) {
     // Need to namespace all our knob stuff
     if (!el.hasOwnProperty(`knob`)) {
         const {settings} = drawer.drawer;
@@ -67,7 +67,7 @@ function setupSingleKnob(drawer: Drawer, el: Knob) {
         for (let i = 0; i < list.length; i++) {
             const {target, attributeName} = list[i];
             if (`hidden` === attributeName) {
-                knobSetAriaExpanded(el, <Drawer>target);
+                knobSetAriaExpanded(el, <DrawerElement>target);
             }
         }
     });
@@ -84,13 +84,13 @@ function setupSingleKnob(drawer: Drawer, el: Knob) {
  * @param el
  * @param drawer
  */
-function knobSetAriaExpanded(el: Knob, drawer: Drawer) {
+function knobSetAriaExpanded(el: KnobElement, drawer: DrawerElement) {
     if (el.knob.settings.accessibility) {
         el.setAttribute(`aria-expanded`, String(!drawer.hidden));
     }
 }
 
-function knobSetAriaControls(el: Knob, drawer: Drawer) {
+function knobSetAriaControls(el: KnobElement, drawer: DrawerElement) {
     if (el.knob.settings.accessibility) {
         el.setAttribute(`aria-controls`, drawer.id);
     }
@@ -103,7 +103,7 @@ function knobSetAriaControls(el: Knob, drawer: Drawer) {
  * @param mutationList
  * @param observer
  */
-function knobObserverCallback(el: Knob, mutationList: Array<MutationRecord>, observer: MutationObserver) {
+function knobObserverCallback(el: KnobElement, mutationList: Array<MutationRecord>, observer: MutationObserver) {
     const {actions} = el.knob.settings;
     if (actions.length > 0) {
         actions
@@ -118,10 +118,10 @@ function knobObserverCallback(el: Knob, mutationList: Array<MutationRecord>, obs
  * initial value from `knobsCycle` in the settings, but
  * can be independently set per knob (manually).
  */
-function handleKnobClick(el: Knob) {
+function handleKnobClick(el: KnobElement) {
     const {doCycle, drawers} = el.knob.settings;
     if (doCycle) {
-        drawers.forEach((observer: MutationObserver, drawer: Drawer) => {
+        drawers.forEach((observer: MutationObserver, drawer: DrawerElement) => {
             drawer.drawer.cycle();
         });
     }

@@ -1,14 +1,14 @@
 import {flattenSingle, isEl, merge, sel, uuid} from "./util";
 import {defaults} from "./settings";
 import {setupKnobsBySelector} from "./knob";
-import {Drawer, DrawerAPI, IngestedSettings, Settings} from "./types";
+import {DrawerElement, DrawerAPI, IngestedSettings, Settings} from "./types";
 
 /**
  * Activate a drawer.
  * @param el
  * @param userSettings
  */
-function Drawer(el: Drawer, userSettings?: Settings) {
+function Drawer(el: DrawerElement, userSettings?: Settings) {
     if (!isEl(el)) {
         return; // Do nothing if called on non-element
     }
@@ -71,7 +71,7 @@ function Drawer(el: Drawer, userSettings?: Settings) {
                 dataset: {
                     state
                 }
-            } = <Drawer>target;
+            } = <DrawerElement>target;
 
             if (`data-state` === attributeName) {
                 setHidden(hiddenStates.indexOf(state) > -1);
@@ -100,7 +100,7 @@ function Drawer(el: Drawer, userSettings?: Settings) {
  * @param list
  * @param observer
  */
-function drawerObserverCallback(el: Drawer, list: Array<MutationRecord>, observer: MutationObserver) {
+function drawerObserverCallback(el: DrawerElement, list: Array<MutationRecord>, observer: MutationObserver) {
     const {settings: {actions}} = el.drawer;
     for (let i = 0; i < actions.length; i++) {
         actions[i](list, el, observer);
@@ -111,7 +111,7 @@ function drawerObserverCallback(el: Drawer, list: Array<MutationRecord>, observe
  * Cycle through all available states, looping around at the end of the array.
  * If it is passed an array of states
  */
-function cycle(el: Drawer, states?: Array<string>) {
+function cycle(el: DrawerElement, states?: Array<string>) {
     const {settings, getState, setState} = el.drawer;
     const curIndex = settings.states.indexOf(getState());
     let nextState = settings.states[curIndex + 1] || settings.states[0];
@@ -153,7 +153,7 @@ function ingestSettingsFromEl(el: HTMLElement, settings: Settings) {
  * Get the state (i.e. open or closed).
  * @returns {string}
  */
-function getState(el: Drawer) {
+function getState(el: DrawerElement) {
     return el.dataset.state;
 }
 
@@ -162,7 +162,7 @@ function getState(el: Drawer) {
  * @param el
  * @param state
  */
-function setState(el: Drawer, state: string) {
+function setState(el: DrawerElement, state: string) {
     el.dataset.state = state;
 }
 
@@ -171,7 +171,7 @@ function setState(el: Drawer, state: string) {
  * @param el
  * @param hide
  */
-function setHidden(el: Drawer, hide: boolean) {
+function setHidden(el: DrawerElement, hide: boolean) {
     el.hidden = hide;
 }
 

@@ -25,15 +25,15 @@ interface DrawerAPI {
     cycle: (states?: Array<string>) => void;
 }
 
-interface Drawer extends HTMLElement {
+interface DrawerElement extends HTMLElement {
     drawer?: DrawerAPI;
 }
 
 interface Action {
-    (list?: Array<MutationRecord>, el?: Drawer, observer?: MutationObserver): void;
+    (list?: Array<MutationRecord>, el?: DrawerElement, observer?: MutationObserver): void;
 }
 
-interface Knob extends HTMLElement{
+interface KnobElement extends HTMLElement{
     knob?: KnobAPI;
 }
 
@@ -50,7 +50,7 @@ interface KnobAPI {
 }
 
 interface KnobAction {
-    (list?: Array<MutationRecord>, el?: Knob, observer?: MutationObserver): void;
+    (list?: Array<MutationRecord>, el?: KnobElement, observer?: MutationObserver): void;
 }
 
-export {Settings, IngestedSettings, DrawerAPI, Drawer, KnobAPI, Knob, KnobSettings, KnobAction}
+export {Settings, IngestedSettings, DrawerAPI, DrawerElement, KnobAPI, KnobElement, KnobSettings, KnobAction}
