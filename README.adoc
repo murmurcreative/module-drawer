@@ -137,6 +137,12 @@ This returns an array of API objects (see below).
 Passing `undefined` to the first parameter of `Cabinet` will allow you to specify a settings object while still using the default selector.
 ====
 
+[IMPORTANT]
+====
+`new Drawer()` will always return a `Drawer` object, but if if it's passed a non-element at instantiation it can't create an actual drawer.
+To reflect this, all Drawer API objects have a simple `real` property which will be `true` when they've been passed a valid element, and `false` when they haven't.
+====
+
 [#api]
 == API
 
