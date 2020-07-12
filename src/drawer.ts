@@ -87,6 +87,11 @@ function Drawer(el: Drawer, userSettings?: Settings) {
         childList: false,
         subtree: false,
     });
+
+    // Set the initial state, if it differs from the current one
+    if (this.settings.initState !== api.getState()) {
+        api.setState(this.settings.initState);
+    }
 }
 
 /**
