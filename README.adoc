@@ -354,3 +354,40 @@ Whatever the case, you should be able to trust that this module will work, easil
 
 Instead of getting fancy with things like web components, this keeps it simple:
 No frameworks or dependencies, just good old link:http://vanilla-js.com/[Vanilla JS].
+
+= Notes
+
+Both of the following often use this pattern:
+
+[source,javascript]
+----
+function Store() {
+    this.repo = new Map();
+
+    Object.defineProperties(this, {
+        property: {
+            get: () => new Map(this.repo.get('property') || []),
+            set: () => // setter logic
+        }
+    })
+}
+----
+
+The purpose of this approach is to prevent users from accidentally setting values when retrieving from a property:
+If it return the actual object stored there, that would be a reference, allowing the original to be changed.
+Documentation should also make it clear that setting must be done through the setter.
+
+== Settings
+
+- Static
+- Set at instantiation, but can be modified afterward
+- In general, things that use settings should check the setting every time they take an action that could be affected by the setting; not once at object creation
+- Getters return defaults if not value set (this is how defaults are stored)
+
+
+== Store
+
+- Dynamic
+- Tracks things that can and will change (i.e. Drawers, Knobs, etc)
+- Setters can (and often do) have side effects, i.e. 'set'ing a drawer on a knob triggers the creation of an observer
+

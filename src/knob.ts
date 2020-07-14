@@ -1,6 +1,7 @@
 import {isEl, sel} from "./util";
 import {DrawerElement, KnobElement, KnobAction, KnobSettingsInterface, DrawerAPI, KnobAPI} from "./types";
 import {KnobSettings} from "./settings";
+import {KnobStore} from "./stores";
 
 /**
  * This is a sort of intermediary function: Because `sel()` always returns
@@ -50,23 +51,61 @@ function Knob(el: KnobElement, userSettings) {
 
     // Now safely create a fresh Knob
     this.settings = new KnobSettings(userSettings);
+    this.store = new KnobStore();
 
+    // Proxy things in settings and stores to the Knob itself
     Object.defineProperties(this, {
         mount: {
-            get: () => isEl(el) ? el : undefined,
-            set: undefined
+            get: (): KnobElement => this.store.mount,
+            set: (element) => this.store.mount = element,
         },
         actions: {
-            get: () => this.settings.actions,
-            set: (action) => this.settings.actions = action
+            get: () => this.store.actions,
+            set: (action) => this.store.actions = action
         },
         drawers: {
-            get: () => this.settings.drawers,
-            set: (arg) => {
-
-            }
+            get: () => this.store.drawers,
+            set: (drawers) => this.store.drawers = drawers,
+        },
+        accessibility: {
+            get: () => this.settings.accessibility,
+            set: (accessibility) => this.settings.accessibility = accessibility,
+        },
+        shouldCycle: {
+            get: () => this.settings.cycle,
+            set: (cycle) => this.settings.cycle = cycle,
         }
     });
+
+    this.actions = handleAriaExpandedState.bind(this);
+
+    this.mount.addEventListener('knob.drawerAdded', handleAddingDrawer.bind(this));
+}
+
+/**
+ * Actions to be executed when a drawer is added to this Knob.
+ * @param event
+ */
+function handleAddingDrawer(event) {
+    const {drawer} = event.detail.drawer;
+    const {api} = this.knob;
+
+    knobSetAriaExpanded(api.mount, drawer);
+    knobSetAriaControls(api.mount, drawer);
+}
+
+/**
+ * Handle changing aria-expanded when the attached drawer is hidden
+ * (or not).
+ * @param list
+ */
+function handleAriaExpandedState(list) {
+    for (let i = 0; i < list.length; i++) {
+        const {target, attributeName} = list[i];
+        if (`hidden` === attributeName) {
+            knobSetAriaExpanded(this.mount, <DrawerElement>target);
+        }
+    }
 }
 
 /**
