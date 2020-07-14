@@ -1,7 +1,7 @@
 import polyfill from "./polyfills";
 import {sel} from "./util";
 import {Drawer} from "./drawer";
-import {Settings} from "./types";
+import {DrawerSettingsInterface} from "./types";
 
 // Set up our polyfills before we do anything else
 polyfill();
@@ -11,7 +11,7 @@ polyfill();
  * @param selector
  * @param userSettings
  */
-function Cabinet(selector: HTMLElement | string, userSettings: Settings) {
+function Cabinet(selector: HTMLElement | string, userSettings: DrawerSettingsInterface) {
     const drawers = sel(selector || `[data-module="drawer"]`);
     if (drawers.length < 1) {
         return; // There are no drawers

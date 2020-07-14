@@ -1,4 +1,4 @@
-interface Settings {
+interface DrawerSettingsInterface {
     states?: Array<string>;
     initState?: string;
     hash?: string;
@@ -18,19 +18,19 @@ interface IngestedSettings {
 }
 
 interface DrawerAPI {
-    real: boolean;
-    settings: Settings;
-    getState: () => string;
-    setState: (state: string) => void;
-    setHidden: (hide: boolean) => void;
-    getHash: () => string;
-    getHashState: () => string;
-    setHash: () => void;
-    clearHash: () => void;
-    wipeHash: () => void;
-    addKnob: (knob: HTMLElement) => void;
-    addAction: (action: Action) => void;
-    cycle: (states?: Array<string>) => void;
+    mount: DrawerElement | undefined;
+    settings: DrawerSettingsInterface;
+    state: string;
+    hidden: boolean;
+    hash: string;
+    actions: Array<Action>;
+    knobs: Array<KnobElement>;
+    hasher: {
+        setUrl: () => void;
+        clearUrl: () => void;
+        wipeUrl: () => void;
+    };
+    cycle: (states: Array<string>) => void;
 }
 
 interface DrawerElement extends HTMLElement {
@@ -41,24 +41,25 @@ interface Action {
     (list?: Array<MutationRecord>, el?: DrawerElement, observer?: MutationObserver): void;
 }
 
-interface KnobElement extends HTMLElement{
+interface KnobElement extends HTMLElement {
     knob?: KnobAPI;
 }
 
-interface KnobSettings {
-    doCycle?: boolean;
+interface KnobSettingsInterface {
+    cycle?: boolean;
     actions?: Array<(list: Array<MutationRecord>, el: HTMLElement, observer: MutationObserver) => void>;
     accessibility?: boolean;
     drawers?: Map<HTMLElement, MutationObserver>;
 }
 
 interface KnobAPI {
-    settings: KnobSettings;
-    addAction: Function;
+    mount: KnobElement | undefined;
+    settings: KnobSettingsInterface;
+    actions: Array<KnobAction>;
 }
 
 interface KnobAction {
     (list?: Array<MutationRecord>, el?: KnobElement, observer?: MutationObserver): void;
 }
 
-export {Settings, IngestedSettings, DrawerAPI, DrawerElement, KnobAPI, KnobElement, KnobSettings, KnobAction}
+export {DrawerSettingsInterface, IngestedSettings, DrawerAPI, DrawerElement, KnobAPI, KnobElement, KnobSettingsInterface, KnobAction}

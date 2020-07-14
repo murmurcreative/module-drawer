@@ -1,5 +1,6 @@
-import {sel} from "./util";
-import {DrawerElement, KnobElement, KnobAction, KnobSettings} from "./types";
+import {isEl, sel} from "./util";
+import {DrawerElement, KnobElement, KnobAction, KnobSettingsInterface, DrawerAPI, KnobAPI} from "./types";
+import {KnobSettings} from "./settings";
 
 /**
  * This is a sort of intermediary function: Because `sel()` always returns
@@ -20,6 +21,55 @@ function setupKnobsBySelector(drawer: DrawerElement, selector: HTMLElement | str
 }
 
 /**
+ * Get the knob on an element.
+ * @param el
+ */
+function getKnob(el: KnobElement): KnobAPI | undefined {
+    if (el.hasOwnProperty(`knob`) && el.knob?.mount) {
+        return el.knob;
+    }
+    return undefined;
+}
+
+/**
+ * Create a new knob on an element.
+ *
+ * ** NOTE **
+ * This will nicely handle trying to create a Knob when one already exists,
+ * but it will *not* overwrite passed userSettings on an existing knob; they
+ * will simply be discarded.
+ * @param el
+ * @param userSettings
+ * @constructor
+ */
+function Knob(el: KnobElement, userSettings) {
+    // Handle trying to create a new Knob when one already exists here
+    if (getKnob(el)) {
+        return getKnob(el);
+    }
+
+    // Now safely create a fresh Knob
+    this.settings = new KnobSettings(userSettings);
+
+    Object.defineProperties(this, {
+        mount: {
+            get: () => isEl(el) ? el : undefined,
+            set: undefined
+        },
+        actions: {
+            get: () => this.settings.actions,
+            set: (action) => this.settings.actions = action
+        },
+        drawers: {
+            get: () => this.settings.drawers,
+            set: (arg) => {
+
+            }
+        }
+    });
+}
+
+/**
  * This attaches a single knob to the drawer bound to this function.
  * It's accessible on the drawer itself at `[drawer element].drawer.addKnob()`.
  * @param drawer
@@ -29,7 +79,7 @@ function setupSingleKnob(drawer: DrawerElement, el: KnobElement) {
     // Need to namespace all our knob stuff
     if (!el.hasOwnProperty(`knob`)) {
         const {settings} = drawer.drawer;
-        const knobSettings: KnobSettings = {
+        const knobSettings: KnobSettingsInterface = {
             doCycle: settings.knobsCycle,
             actions: settings.knobActions,
             accessibility: settings.knobAccessibility,
