@@ -62,4 +62,101 @@ interface KnobAction {
     (list?: Array<MutationRecord>, el?: KnobElement, observer?: MutationObserver): void;
 }
 
-export {DrawerSettingsInterface, IngestedSettings, DrawerAPI, DrawerElement, KnobAPI, KnobElement, KnobSettingsInterface, KnobAction}
+interface KnobSetupObject {
+    elements?: Array<HTMLElement | string>;
+    settings?: KnobSettingsInterface;
+}
+
+namespace IDrawer {
+    export interface Initialize {
+        settings: IDrawer.Settings;
+        knobs: Array<string | HTMLElement> | IDrawer.KnobSetup;
+        actions: Array<IActions.Observe>;
+    }
+
+    export interface Settings {
+        hiddenStates: Array<string>;
+        states: Array<string>;
+        hashState: string;
+    }
+
+    export interface KnobSetup {
+        elements: Array<HTMLElement | string>;
+        settings: IKnob.Settings;
+        actions: Array<IActions.Observe>;
+    }
+
+    export interface Element extends HTMLElement {
+        drawer: IDrawer.API;
+    }
+
+    export interface API {
+        mount: IDrawer.Element;
+        hidden: boolean;
+        settings: IDrawer.Settings;
+        state: string;
+        cycle: (states?: Array<string>) => void;
+        hasher: {
+            setUrl: () => void;
+            clearUrl: () => void;
+            wipeUrl: () => void;
+        }
+    }
+}
+
+namespace IKnob {
+    export interface Settings {
+        cycle: boolean;
+        accessibility: boolean;
+    }
+
+    export interface Store extends IStores.Default {
+        drawers: Map<IDrawer.Element, MutationObserver>;
+    }
+
+    export interface Element extends HTMLElement {
+        knob: IKnob.API;
+    }
+
+    export interface API {
+        store: IKnob.Store;
+        settings: IKnob.Settings;
+        mount: IKnob.Element;
+        actions: Map<string, IActions.Observe>;
+        drawers: Map<IDrawer.Element, MutationObserver>;
+    }
+}
+
+namespace IActions {
+    export interface Observe {
+        list: Array<MutationRecord>;
+        api: IDrawer.API | IKnob.API;
+        observer: MutationObserver;
+    }
+}
+
+namespace IStores {
+    export interface Default {
+        repo: Map<string, any>;
+        mapGet: Map<string, any>;
+    }
+}
+
+namespace IUtil {
+    export interface SelResult {
+
+    }
+}
+
+export {
+    DrawerSettingsInterface,
+    IngestedSettings,
+    DrawerAPI,
+    DrawerElement,
+    KnobAPI,
+    KnobElement,
+    KnobSettingsInterface,
+    KnobAction,
+    IKnob,
+    IDrawer
+}

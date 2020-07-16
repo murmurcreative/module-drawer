@@ -1,25 +1,16 @@
 import {isEl, sel} from "./util";
-import {DrawerElement, KnobElement, KnobAction, KnobSettingsInterface, DrawerAPI, KnobAPI} from "./types";
+import {
+    DrawerElement,
+    KnobElement,
+    KnobAction,
+    KnobSettingsInterface,
+    DrawerAPI,
+    KnobAPI,
+    IKnob,
+    IDrawer
+} from "./types";
 import {KnobSettings} from "./settings";
 import {KnobStore} from "./stores";
-
-/**
- * This is a sort of intermediary function: Because `sel()` always returns
- * arrays, this handles dealing with each element of the array. The purpose of
- * this is that we want to be able to pass either a selector string or a literal
- * element when setting up a list of knobs and not have to think about it.
- * @param drawer
- * @param selector
- */
-function setupKnobsBySelector(drawer: DrawerElement, selector: HTMLElement | string) {
-    const array = sel(selector);
-
-    if (array.length < 1) {
-        return; // nothing to do
-    }
-
-    array.map((knob: HTMLElement) => setupSingleKnob(drawer, knob));
-}
 
 /**
  * Get the knob on an element.
@@ -35,21 +26,16 @@ function getKnob(el: KnobElement): KnobAPI | undefined {
 /**
  * Create a new knob on an element.
  *
- * ** NOTE **
- * This will nicely handle trying to create a Knob when one already exists,
- * but it will *not* overwrite passed userSettings on an existing knob; they
- * will simply be discarded.
+ * ** WARNING **
+ * This will not check to see if a Knob already exists on this element; you are
+ * advised to check before instantiating a new knob, i.e. with getKnob().
+ * Otherwise you will like get undesirable behavior.
+ *
  * @param el
  * @param userSettings
  * @constructor
  */
-function Knob(el: KnobElement, userSettings) {
-    // Handle trying to create a new Knob when one already exists here
-    if (getKnob(el)) {
-        return getKnob(el);
-    }
-
-    // Now safely create a fresh Knob
+function Knob(el: IKnob.Element, userSettings) {
     this.settings = new KnobSettings(userSettings);
     this.store = new KnobStore();
 
@@ -67,136 +53,63 @@ function Knob(el: KnobElement, userSettings) {
             get: () => this.store.drawers,
             set: (drawers) => this.store.drawers = drawers,
         },
-        accessibility: {
-            get: () => this.settings.accessibility,
-            set: (accessibility) => this.settings.accessibility = accessibility,
-        },
-        shouldCycle: {
-            get: () => this.settings.cycle,
-            set: (cycle) => this.settings.cycle = cycle,
-        }
     });
 
-    this.actions = handleAriaExpandedState.bind(this);
+    // Attach API
+    this.mount = el;
+    this.mount.knob = this;
 
-    this.mount.addEventListener('knob.drawerAdded', handleAddingDrawer.bind(this));
+    this.actions = handleAriaExpandedState;
+
+    this.mount.addEventListener(`knob.drawerAdded`, handleDrawerAddedEvent.bind(this));
+    this.mount.addEventListener(`click`, handleClick.bind(this));
 }
 
 /**
  * Actions to be executed when a drawer is added to this Knob.
  * @param event
  */
-function handleAddingDrawer(event) {
+function handleDrawerAddedEvent(event) {
     const {drawer} = event.detail.drawer;
-    const {api} = this.knob;
 
-    knobSetAriaExpanded(api.mount, drawer);
-    knobSetAriaControls(api.mount, drawer);
+    setAriaExpanded(this, drawer);
+    setAriaControls(this, drawer);
 }
 
 /**
  * Handle changing aria-expanded when the attached drawer is hidden
  * (or not).
  * @param list
+ * @param api
  */
-function handleAriaExpandedState(list) {
+function handleAriaExpandedState(list, api: IKnob.API) {
     for (let i = 0; i < list.length; i++) {
-        const {target, attributeName} = list[i];
+        const {attributeName, target: { drawer }} = list[i];
         if (`hidden` === attributeName) {
-            knobSetAriaExpanded(this.mount, <DrawerElement>target);
+            setAriaExpanded(api, drawer);
         }
     }
 }
 
 /**
- * This attaches a single knob to the drawer bound to this function.
- * It's accessible on the drawer itself at `[drawer element].drawer.addKnob()`.
- * @param drawer
- * @param el
- */
-function setupSingleKnob(drawer: DrawerElement, el: KnobElement) {
-    // Need to namespace all our knob stuff
-    if (!el.hasOwnProperty(`knob`)) {
-        const {settings} = drawer.drawer;
-        const knobSettings: KnobSettingsInterface = {
-            doCycle: settings.knobsCycle,
-            actions: settings.knobActions,
-            accessibility: settings.knobAccessibility,
-            drawers: new Map(),
-        };
-        el.knob = {
-            settings: knobSettings,
-            addAction: (action: KnobAction) => el.knob.settings.actions.push(action),
-        };
-    }
-
-    const {settings: {drawers}, addAction} = el.knob;
-
-    if (drawers.has(drawer)) {
-        return; // A knob can only be attached to a drawer once
-    }
-
-    // Store a reference to the drawer and its observer
-    drawers.set(drawer, new MutationObserver((list: Array<MutationRecord>, observer: MutationObserver) => knobObserverCallback(el, list, observer)));
-
-    // Start observing
-    drawers.get(drawer).observe(drawer, {
-        attributes: true,
-        attributeFilter: [`data-states`, `hidden`],
-        attributeOldValue: true,
-        childList: false,
-        subtree: false,
-    });
-
-    // Set up all accessibility activity
-    knobSetAriaExpanded(el, drawer);
-    knobSetAriaControls(el, drawer);
-    // Set up action to link aria-expanded state to drawer hidden state
-    addAction((list: Array<MutationRecord>) => {
-        for (let i = 0; i < list.length; i++) {
-            const {target, attributeName} = list[i];
-            if (`hidden` === attributeName) {
-                knobSetAriaExpanded(el, <DrawerElement>target);
-            }
-        }
-    });
-
-    // Watch for clicks
-    // `knobsCycle` checks on run in the handler to allow for dynamic
-    // modifications.
-    el.addEventListener(`click`, () => handleKnobClick(el));
-}
-
-/**
- * Handles setting the aria-expanded attribute on the knob bound to this
- * function.
- * @param el
+ * Handles setting the aria-expanded attribute on the knob.
+ * @param api
  * @param drawer
  */
-function knobSetAriaExpanded(el: KnobElement, drawer: DrawerElement) {
-    if (el.knob.settings.accessibility) {
-        el.setAttribute(`aria-expanded`, String(!drawer.hidden));
-    }
-}
-
-function knobSetAriaControls(el: KnobElement, drawer: DrawerElement) {
-    if (el.knob.settings.accessibility) {
-        el.setAttribute(`aria-controls`, drawer.id);
+function setAriaExpanded(api: IKnob.API, drawer: IDrawer.API) {
+    if (api.settings.accessibility) {
+        api.mount.setAttribute(`aria-expanded`, String(!drawer.hidden));
     }
 }
 
 /**
- * This is called when the knob observes a mutation on a drawer it is
- * attached to.
- * @param el
- * @param mutationList
- * @param observer
+ * Handles setting up the aria-controls attribute on the knob.
+ * @param api
+ * @param drawer
  */
-function knobObserverCallback(el: KnobElement, mutationList: Array<MutationRecord>, observer: MutationObserver) {
-    const {actions} = el.knob.settings;
-    if (actions.length > 0) {
-        actions
-            .map((action: KnobAction) => action(mutationList, el, observer));
+function setAriaControls(api: IKnob.API, drawer: IDrawer.API) {
+    if (api.settings.accessibility) {
+        api.mount.setAttribute(`aria-controls`, drawer.mount.id);
     }
 }
 
@@ -207,13 +120,13 @@ function knobObserverCallback(el: KnobElement, mutationList: Array<MutationRecor
  * initial value from `knobsCycle` in the settings, but
  * can be independently set per knob (manually).
  */
-function handleKnobClick(el: KnobElement) {
-    const {doCycle, drawers} = el.knob.settings;
-    if (doCycle) {
-        drawers.forEach((observer: MutationObserver, drawer: DrawerElement) => {
+function handleClick() {
+    const {settings: {cycle}, drawers} = this;
+    if (cycle) {
+        drawers.forEach((observer: MutationObserver, drawer: IDrawer.Element) => {
             drawer.drawer.cycle();
         });
     }
 }
 
-export {setupKnobsBySelector, setupSingleKnob}
+export {Knob, getKnob}

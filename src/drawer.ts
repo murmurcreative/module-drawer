@@ -1,44 +1,47 @@
 import {flattenSingle, isEl, merge, sel, urlify, uuid} from "./util";
 import {DrawerSettings} from "./settings";
-import {setupKnobsBySelector} from "./knob";
-import {DrawerElement, DrawerAPI, IngestedSettings} from "./types";
+import {DrawerElement, DrawerAPI, IngestedSettings, KnobElement, IDrawer} from "./types";
 import {clearHash, extractHash, ifValidHash, isValidHash, setHash, wipeHash} from "./hash";
+import {DrawerStore} from "./stores";
 
 /**
  * Activate a drawer.
  * @param el
  * @param userSettings
  */
-function Drawer(el: DrawerElement, userSettings?) {
+function Drawer(el: IDrawer.Element, userSettings?) {
     this.settings = ingestSettingsFromEl(el, new DrawerSettings(userSettings));
+    this.store = new DrawerStore();
 
     Object.defineProperties(this, {
-        // Once a drawer is mounted, you can change that
         mount: {
-            get: () => isEl(el) ? el : undefined,
-            set: undefined,
+            get: () => this.store.mount,
+            set: (mount) => this.store.mount = mount,
         },
         state: {
-            get: () => getState(el),
-            set: (state) => setState(el, state),
+            get: () => this.mount.dataset.state,
+            set: (state) => {
+                if (this.settings.states.indexOf(state) > -1) {
+                    this.mount.dataset.state = state;
+                }
+            },
         },
         hidden: {
-            get: () => el.hidden,
-            set: (hide) => setHidden(el, hide),
+            get: () => this.mount.hidden,
+            set: (hide) => this.mount.hidden = Boolean(hide),
         },
         hash: {
             get: () => this.settings.hash,
             set: (hash) => this.settings.hash = hash,
         },
         actions: {
-            get: () => this.settings.actions,
-            set: (action) => this.settings.actions = action,
+            get: () => this.store.actions,
+            set: (action) => this.store.actions = action,
         },
         knobs: {
-            get: () => this.settings.knobs,
-            set: (knob) => this.settings.knobs = knob
+            get: () => this.store.knobs,
+            set: (knob) => this.store.knobs = knob
         },
-
     });
 
     // Functions for hash handling
@@ -58,13 +61,20 @@ function Drawer(el: DrawerElement, userSettings?) {
     this.actions = hashCallback;
 
     // Attach the API to the element
-    initializeElement(el, this);
+    this.mount = el;
+    this.mount.drawer = this;
 
-    // Attach all Knobs
-    initializeKnobs(this);
+    // Ensure id
+    if (!this.mount.id) {
+        this.mount.id = this.settings.uuid ? this.settings.uuid() : uuid();
+    }
 
-    // Start observing this drawer
-    (new MutationObserver((list: Array<MutationRecord>, observer: MutationObserver) => drawerObserverCallback(el, list, observer))).observe(el, {
+    // DEBUG
+    // add knob
+    this.knobs = 'button';
+
+    const watcher = new MutationObserver((list, observer) => handleMutation.bind(this)(list, observer));
+    this.observer = watcher.observe(this.mount,{
         attributes: true,
         attributeFilter: [`data-state`, `hidden`],
         attributeOldValue: true,
@@ -84,44 +94,28 @@ function Drawer(el: DrawerElement, userSettings?) {
     this.state = this.settings.initState;
 }
 
-function initializeKnobs(api) {
-    if (api.settings.knobs.length > 0) {
-        console.log(api.settings.knobs);
-        api.settings.knobs.map(knob => api.knobs = knob);
+function getDrawer(el: IDrawer.Element): IDrawer.API {
+    if (el.hasOwnProperty(`drawer`) && el.drawer?.mount) {
+        return el.drawer;
     }
+    return undefined;
 }
 
-function initializeElement(el, api) {
-    // Place the API on the element
-    el.drawer = api;
-
-    if (!el.id) {
-        el.id = api.settings.uuid ? this.settings.uuid() : uuid();
-    }
+function handleMutation(list, observer) {
+    this.actions.forEach(action => action(list, this, observer));
 }
 
 /**
  * Set up hidden behavior.
  * @param list
+ * @param api
  */
-function hiddenCallback(list): void {
+function hiddenCallback(list: Array<MutationRecord>, api: IDrawer.API): void {
     for (let i = 0; i < list.length; i++) {
-        const {
-            attributeName,
-            target,
-        } = list[i];
-
-        const {
-            drawer,
-            drawer: {
-                settings: {
-                    hiddenStates
-                }
-            }
-        } = <DrawerElement>target;
+        const { attributeName } = list[i];
 
         if (`data-state` === attributeName) {
-            drawer.hidden = hiddenStates.indexOf(drawer.state) > -1;
+            api.hidden = api.settings.hiddenStates.indexOf(api.state) > -1;
         }
     }
 }
@@ -129,13 +123,14 @@ function hiddenCallback(list): void {
 /**
  * Set up hash behavior.
  * @param list
+ * @param api
  */
-function hashCallback(list: Array<MutationRecord>): void {
+function hashCallback(list: Array<MutationRecord>, api: IDrawer.API): void {
     for (let i = 0; i < list.length; i++) {
-        const {attributeName, target} = list[i];
-        const {drawer, drawer: {hasher: {setUrl, clearUrl}, settings: {hashState}}} = <DrawerElement>target;
+        const {attributeName} = list[i];
+        const { settings: { hashState }, state, hasher: { setUrl, clearUrl } } = api;
         if (`data-state` === attributeName) {
-            if (drawer.state === hashState) {
+            if (state === hashState) {
                 setUrl();
             } else {
                 clearUrl();
@@ -145,24 +140,11 @@ function hashCallback(list: Array<MutationRecord>): void {
 }
 
 /**
- * Called whenever the drawer observes a mutation change.
- * @param el
- * @param list
- * @param observer
- */
-function drawerObserverCallback(el: DrawerElement, list: Array<MutationRecord>, observer: MutationObserver) {
-    const {settings: {actions}} = el.drawer;
-    for (let i = 0; i < actions.length; i++) {
-        actions[i](list, el, observer);
-    }
-}
-
-/**
  * Cycle through all available states, looping around at the end of the array.
  * If it is passed an array of states
  */
-function cycle(el: DrawerElement, limitedStates?: Array<string>) {
-    const {drawer, drawer: { settings: { states }}} = el;
+function cycle(el: IDrawer.Element, limitedStates?: Array<string>) {
+    const {drawer, drawer: {settings: {states}}} = el;
     const curIndex = states.indexOf(drawer.state);
     let nextState = states[curIndex + 1] || states[0];
 
@@ -237,4 +219,4 @@ function setHidden(el: DrawerElement, hide: boolean) {
     el.hidden = hide;
 }
 
-export {Drawer, cycle, getState, setState, setHidden}
+export {Drawer, cycle, getState, setState, setHidden, getDrawer}

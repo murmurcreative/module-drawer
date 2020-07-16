@@ -1,5 +1,5 @@
 import {Cabinet, Drawer} from "../src";
 
-console.log(new Cabinet());
+new Cabinet();
 
-console.log(new Drawer(document.querySelector(`[data-module="drawer2"]`)));
+new Drawer(document.querySelector(`[data-module="drawer2"]`));

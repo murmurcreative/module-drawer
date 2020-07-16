@@ -391,3 +391,45 @@ Documentation should also make it clear that setting must be done through the se
 - Tracks things that can and will change (i.e. Drawers, Knobs, etc)
 - Setters can (and often do) have side effects, i.e. 'set'ing a drawer on a knob triggers the creation of an observer
 
+
+== Storing Knobs & Drawers, Where?
+
+=== Knobs want to knox their drawers
+
+Knobs have to know what drawer to observer, at least on instantiation.
+It seems useful to be able to easily get the drawers we're attached to, as well as the observers for those drawers.
+
+=== Drawers want to know their knobs
+
+Since the Drawer is the entry point for this whole thing, there needs to be at least some awareness of attached knobs at instantiation so that the drawer can instruct those knobs to attach.
+After instantiation it seems less useful to know this, since the drawer does not need to actively communicate w/ knobs--they observe it.
+Still, it's not hard to to think that at some point you might want to query a drawer to see who is watching it, and since that information is not exposed via a queryable parameter, you would need to either do a very expensive examination of every element in the DOM, or you would need to have something on the drawer that tracks attached knobs.
+
+=== Drawer Startup Process
+
+. `new Drawer({ knobs: ['button'] })` says to create a drawer, and add `button` element(s) as knob(s)
+. Find all elements that match `button` and iterate over them
+. For each matched element, get the API, either by creating a new Knob, or retrieving the existing Knob API
+. Tell the API to attach this drawer (i.e. `KnobAPI.drawers = thisDrawer`)
+. Store in map, with knob element as key, api as value
+
+=== Knob Startup Process
+
+. `new Knob({ drawers: ['div'] })` says to create a knob, and add the `div` element(s) as drawer(s).
+. Find all elements that match `div` and iterate over them
+. For each matched element, get the API. If there is no API, skip that drawer and remove it from the list
+(i.e. we only want pre-existing drawers)
+.Tell the API to attach this knob
+
+
+The issue here is that the way I've set it up w/ getters and setters, we get into a recursive circle when a knob tries to add itself to a drawer as a result of a setter call.
+In other words we want `KnobAPI.drawers = thisDrawer` to do two different things.
+
+The idea of using getters/setters for functionality is to help isolate functionality, settings, etc, to individual elements, and not rely on other elements for help.
+So what is `KnobAPI.drawers = drawer` saying?
+"We want to watch this drawer"
+What is `DrawerAPI.knobs = knob` saying?
+"We want this knob to watch us"
+Watching a drawer should be functionality left entirely up to the Knob.
+I think in that case, `DrawerAPI.knobs.set` _shouldn't put anything in the drawer store_.
+Instead, it should simply dispatch a call to the relevant knobs to attach themselves, and they'll store themselves in the drawer store by accessing the repo directly--_not_ by using the setter!

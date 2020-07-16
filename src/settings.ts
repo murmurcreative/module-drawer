@@ -1,5 +1,5 @@
 import {isValidHash} from "./hash";
-import {flattenSingle, sel, urlify} from "./util";
+import {urlify} from "./util";
 import isCallable from "is-callable";
 
 /**
@@ -115,16 +115,6 @@ function DrawerSettings(userSettings) {
                 }
             }
         },
-        knobs: {
-            get: () => store.get('knobs') || [],
-            set: (arg) => {
-                if (Array.isArray(arg)) {
-                    store.set('knobs', flattenSingle(arg.map(sel)));
-                } else {
-                    sel(arg).map(el => append('knobs', el));
-                }
-            }
-        },
         knobsCycle: {
             get: () => store.get('knobsCycle') || true,
             set: (arg) => store.set('knobsCycle', Boolean(arg))
@@ -169,39 +159,12 @@ function KnobSettings(userSettings) {
 
     Object.defineProperties(this, {
         cycle: {
-            get: () => store.get('cycle'),
-            set: (arg) => store.set(Boolean(arg))
-        },
-        actions: {
-            get: () => store.get('actions') || [],
-            set: (arg) => {
-                if (isCallable(arg)) {
-                    append('actions', arg);
-                }
-            }
+            get: () => store.get('cycle') || true,
+            set: (arg) => store.set(`cycle`, Boolean(arg)),
         },
         accessibility: {
             get: () => store.get('actions') || true,
             set: (arg) => store.set('actions', Boolean(arg))
-        },
-        drawers: {
-            get: () => store.get('drawers') || new Map(),
-            set: (arg) => {
-                let drawers = [];
-                if (Array.isArray(arg)) {
-                    drawers = arg.map(sel).map(flattenSingle);
-                } else {
-                    drawers = sel(arg);
-                }
-                drawers.map(drawer => {
-                    let observer = new MutationObserver((list, observer) => {
-                        store.get('actions').map(action => {
-                            action(list, )
-                        });
-                    });
-                    store('drawers').set(drawer, )
-                })
-            }
         },
     });
 
@@ -274,7 +237,7 @@ function drawerDefaults() {
          * would be very confusing behavior. Knobs are strictly
          * opt-in.
          */
-        ['knobs', []],
+        ['knobs', new Map()],
         /**
          * Whether or not clicking on a knob fires the `cycle()` method
          * on any attached drawer(s).
