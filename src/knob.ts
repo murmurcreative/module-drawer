@@ -1,4 +1,4 @@
-import {isEl, resolveLoadArguments, sel} from "./util";
+import {resolveLoadArguments} from "./util";
 import {IKnob, IDrawer, IActions} from "./types";
 import {KnobSettings} from "./settings";
 import {KnobStore} from "./stores";

@@ -32,22 +32,6 @@ const sel = (el: any): Array<HTMLElement> => {
 };
 
 /**
- * Merges two objects.
- *
- * Different from Object.assign in that it does not modify the `target`
- * object; it creates a copy on the fly.
- *
- * Currently just a wrapper for Object.assign, but abstracted in case this
- * logic needs to become more detail (i.e. a deeper merge).
- * @param target
- * @param defaults
- * @returns {object}
- */
-const merge = (target: object, defaults: object): object => {
-    return Object.assign(Object.assign({}, target), defaults);
-};
-
-/**
  * Replicates .flat() for arrays with only a single level of depth.
  *
  * This is to handle browsers (i.e. IE) that don't support .flat().
@@ -91,12 +75,19 @@ function uuid(): string {
     });
 }
 
+/**
+ * Bind to drawers/knobs and use to resolve passed and read arguments.
+ * @param user
+ * @param collected
+ * @param settings
+ * @param stores
+ */
 function resolveLoadArguments(
     user: ISettings.Default,
     collected: Map<string, any>,
     settings: Array<string>,
     stores: Array<string>,
-) {
+): void {
     if (typeof user === 'object') {
         Object.keys(user).map((key: string) => {
             // Skip args that have already been set
@@ -135,4 +126,4 @@ function getDefaults(): Map<string, any> {
     return defaults;
 }
 
-export {isEl, sel, merge, flattenSingle, urlify, uuid, getDefaults, resolveLoadArguments}
+export {isEl, sel, flattenSingle, urlify, uuid, getDefaults, resolveLoadArguments}
