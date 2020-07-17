@@ -1,7 +1,7 @@
-:Date: 07/12/2020
+:Date: 07/17/2020
 :Author: Ben Martinez-Bateman
 :Email: ben@murmurcreative.com
-:Version: 2.3.0-alpha
+:Version: 2.4.0-alpha
 :toc: macro
 :toclevels: 3
 :toc-title:
@@ -60,47 +60,64 @@ For more details on functionality, etc, take a look at the link:#config[configur
 [#config]
 == Configuration
 
+[#config-selector]
+=== Selector
+
+With a few exceptions, when specifying an element (or set of elements) you can use a variety of arguments and trust that Drawer will just handle it for you.
+Wherever you see the `SelectorArgument` type, you can use one of the following types:
+
+`HTMLElement`:: i.e. the result of `document.querySelector('selector-name')`.
+`string`:: This will be interpreted as a selector, i.e. `.class`, `#id`, etc.
+`Array<HTMLElement | string>`:: An array of either of the above.
+
+[NOTE]
+====
+Internally, Drawer almost always deals with elements as arrays; targeting a single element usually just means an array with one row.
+Keep this in mind when crafting your selectors:
+If you want to be _certain_ Drawer targets only a single element, pass it that element directly.
+====
+
+[#config-drawer]
+=== Drawer / Cabinet
+
 Both `Drawer` and `Cabinet` take a second argument that can contain more specific settings.
 Passing an object to this argument will overwrite the defaults on a per-property basis.
 This is done using a shallow merge.
+When calling `Drawer` the settings will apply only to that Drawer; When calling `Cabinet` the settings will apply to all Drawers that match.
 
 [horizontal]
-`states`:: _Array<string>_ | *Default:* `['closed', 'open']`
+`states`:: _<Array<string>>_ *Default:* `['closed', 'open']`
 +
 These are the states that appear in `data-state`.
 `cycle()` will move through them in order, one at a time, looping to the beginning once last row is reached.
 The strings themselves are essentially arbitrary.
-`initState`:: _string_ | *Default:* `undefined` (effectively `states[0]`)
+`initState`:: _<string>_ *Default:* `undefined` (effectively `states[0]`)
 +
 The initial state.
 Must be a string from `states`.
 If nothing is defined here, then the first state in `states` will be used.
 +
 Can be overridden by adding `data-state="state-name"` to the Drawer HTML.
-`hiddenStates`:: _Array<string>_ | *Default:* `['closed']`
+`hiddenStates`:: _<Array<string>>_ *Default:* `['closed']`
 +
 An array of strings.
 When the Drawer is in a state listed here, it will be considered hidden and the `hidden` HTML attribute will be applied.
 If you don't ever want the drawer to be hidden, just set this to an empty array.
-`hash`:: _string_ | *Default:* `''` (empty string)
+`hash`:: _<string>_ *Default:* `''` (empty string)
 +
 If set, this is a string that will be appended to the URL as a `#hash` when the Drawer's state matches the `hashState`.
 If there is already a matching hash in the URL when the Drawer is instantiated, it will be immediately put into that state, regardless of any other settings.
 +
 [NOTE]
 ====
-Mechanically it does this by overriding your `initState` with the `hashState`, which will remain the `initState` for the life of that Drawer
-(unless manually changed).
+Mechanically it does this by overriding your `initState` with the `hashState`, which will remain the `initState` for the life of that Drawer (unless manually changed).
 ====
 +
 Can be overridden by adding `data-hash="hash-string"` to the Drawer HTML.
-`hashState`:: _string_ | *Default:* `''` (empty string)
+`hashState`:: _<string>_ *Default:* `''` (empty string)
 +
 The state that should correspond to your `hash`.
-This must be a valid state
-(i.e. it must be in `states`)
-and it cannot be a "hidden" state
-(i.e. it _cannot_ be in `hiddenStates`).
+This must be a valid state (i.e. it must be in `states`) and it cannot be a "hidden" state (i.e. it _cannot_ be in `hiddenStates`).
 `hashStates` that do not meet this criteria will be ignored.
 +
 If there is no valid `hash` set, this setting will have no effect.
@@ -108,50 +125,71 @@ If there is no valid `hash` set, this setting will have no effect.
 If `hash` is valid but `hashState` is not, the Drawer will use the first non-hidden state it can find in `states`.
 +
 Can be overridden by adding `data-hashState="state"` to the Drawer HTML.
-`actions`:: _Array<Function>_ | *Default:* `[]`
+`actions`:: _<Array<Function>>_ *Default:* `[]`
 +
 An array of callbacks, called when the Drawer observes its state changing.
-See link:#api[`addAction()`] for details on how to define actions.
-`uuid`:: _Function_ | *Default:* `undefined`
+See link:#actions[`actions`] for details.
+`uuid`:: _<Function>_ *Default:* (internal function)
 +
 Drawer uses a simple internal function generate uuids.
 If you require something more cryptographically secure, add a callback here that returns a uuid.
-`knobs`:: _Array<HTMLElement|string>_ | *Default:* `[]`
+`knobs`:: _<link:#config-selector[SelectorArgument] | Object>_ *Default:* `[]`
 +
-An array of elements or selectors that will be attached to this Drawer.
+If passed a `SelectorArgument`, this will attach all matching Knobs to the drawer, with default settings.
 +
-Can be overridden by adding `data-knob="selector"` to the Drawer HTML.
-`knobsCycle`:: _boolean_ | *Default:* `true`
+If you need to attach knobs with different settings, instead pass an argument with the following shape:
++
+[source,javascript]
+----
+{
+    elements: ['.knob'], // SelectorArgument
+    settings: {
+        cycle: false,
+        accessibility: true,
+        actions: [
+            function doThing(list) {
+                doTheThing(list);
+            },
+        ]
+    },
+}
+----
++
+All matching elements will be assigned those settings and link:#actions[actions].
++
+This is overridden by `data-knob='selector'` on the Drawer.
+Keep in mind that this method will always attach knobs with default settings.
+
+[#config-knob]
+=== Knob
+
+If you're instantiating Knobs independently with `new Knob()` then you can pass a settings object as the second parameter with the following options:
+
+[horizontal]
+`cycle`:: _<boolean>_ *Default:* `true`
 +
 A boolean that determines whether or not clicking on a Knob will fire `cycle()` on its attached Drawers.
-`knobActions`:: _Array<Function>_ | *Default:* `[]`
-+
-An array of callbacks, called when a Knob observes a state change on an attached Drawer.
-Callbacks receive arguments that are the mutation list, Knob DOM element, and Knob observer.
-`knobAccessibility`:: _boolean_ | *Default:* `true`
+`accessibility`:: _<boolean>_ *Default:* `true`
 +
 This enables (or disables) accessibility features.
-Generally you should not turn it off, but for some use cases
-(i.e. non-interactive knobs)
-it may be desirable to disable it, which you can do by passing `false`.
+Generally you should not turn it off, but for some use cases (i.e. non-interactive knobs) it may be desirable to disable it, which you can do by passing `false`.
+`actions`:: _<Array<Function>>_ *Default:* `[]`
++
+An array of callbacks, called when a Drawer this Knob is attached to changes state.
+See link:#actions[`actions`] for details.
 
 [#instantiation]
 == Instantiation
 
 - `new Drawer(element, settings)` - The `element` argument is *required* and _must_ be a reference to a DOM element, i.e. the result of `document.querySelector()`.
-Use this if you want to instantiate only a single, specific Drawer
-(i.e. a site navigation menu).
+Use this if you want to instantiate only a single, specific Drawer (i.e. a site navigation menu).
 +
 This returns an API object (see below) for the Drawer.
-- `new Cabinet(selector, settings)` - The `selector` must be either a valid selector
-(i.e. something `document.querySelectorAll()` understands)
-or a reference to a DOM element.
-If no `selector` is specified
-(or if `selector` is `undefined`)
+- `new Cabinet(selector, settings)` - The `selector` must be either a valid selector (i.e. something `document.querySelectorAll()` understands) or a reference to a DOM element.
+If no `selector` is specified (or if `selector` is `undefined`)
 `Cabinet` will use the default selector, which is `[data-module="drawer"]`.
 +
-Use this if you want to instantiate a bunch of Drawers at once with the same settings
-(i.e. an accordion).
+Use this if you want to instantiate a bunch of Drawers at once with the same settings (i.e. an accordion).
 +
 This returns an array of API objects (see below).
 +
@@ -169,6 +207,83 @@ To reflect this, all Drawer API objects have a simple `real` property which will
 [#api]
 == API
 
+Drawers and Knobs have an API object attached to their elements in the dom.
+For Drawers, this is a `.drawer`;
+for Knobs, `.knob`.
+You can also get the API for either by calling `getDrawer(element)` or `getKnob(element)`.
+
+[#api-drawer]
+=== Drawer
+
+[horizontal]
+`state`:: _<string>_
++
+The current state of the Drawer.
+To change the state, assign a new one: `api.state = `closed``.
+Attempting to assign an invalid state
+(i.e. one that isn't in the `settings.states` array)
+will have no effect.
+`hidden`:: _<boolean>_
++
+Whether or not the Drawer is hidden.
+This is based on the current value of `state` and the value(s) in `settings.hiddenStates`.
++
+Although this value can be set by assigning a new value
+(`api.hidden = false`)
+doing so will _not_ change the `state`, and so may odd behavior.
+If you want to hide a Drawer, change the `state` to something that is a hidden state.
+`cycle(states?: Array<string>)`:: _<Function>_
++
+Cycles through states on the Drawer.
+If called without an argument, it advances to the next states.
+If called with an array of valid states, it will advance to the next valid state in that array.
+`actions`:: _<Map<string, Function>>_
++
+Callbacks called by the MutationObserver.
+See link:#actions[actions] for how those callbacks are constructed.
+To add one, assign it: `api.actions = someAction`.
+This will _append_ the new action, unless it has the same name as an already-stored action, in which case it will replace the old one.
+You can also assign array of actions, which will behave in the same way.
+`knobs`:: _<Map<HTMLElement, KnobAPI>>_
++
+List of Knobs attached to this Drawer.
+To add a new knob, assign it: `api.knobs = document.querySelector('.knob'))`.
+This will _append_ new Knobs, but if you attempt to add the same `HTMLElement` it will overwrite the old one.
+You can also assign arrays of Knobs, which will behave in the same way.
+`hash`:: _<string>_
++
+The string used for the URL hash feature.
+If this is a string, the feature is enabled;
+otherwise it is disabled.
++
+While you can assign it directly, usually
+`mount`:: _<HTMLElement>_
++
+The element that this API is attached to.
+It is here to allow you access to the element from actions, etc.
+You _cannot_ modify its value after the Drawer has been created.
+
+The above are the API endpoints you should be using;
+they are chosen to give you necessary access to the things required, take steps validate your input, and are extremely unlikely to change outside of a major version bump.
+If you need some deeper access the following properties are also exposed, but keep in mind that their shape is not as guaranteed, and they have fewer checks in place to help you not break things.
+
+[horizontal]
+`settings`:: Contains internal settings for the Drawer.
+Settings are things that (generally) aren't going to change after instantiation and describe
+behavior, like `hiddenStates` or the hash used if `hash` is enabled.
+While they do some validation on input, changing them generally has no side effects.
+`store`:: Contains internal values and references for the Drawer.
+Things in the store are more dynamic and likely to change, and are also often complex objects that the Drawer acts upon, or asks to act for it.
+Modifying items in the store will often have side effects;
+i.e. adding an item to `knobs` will cause a new `Knob` to be created on an element and attached to this drawer.
+Nearly everything in the store is proxied through the common API endpoints, so you should use those instead of accessing the store directly.
+`hasher`
+
+
+[#api-knob]
+=== Knob
+
+
 Each Drawer has an API object that contains settings information as well as several methods for interacting with that Drawer.
 
 These API objects are returned by link:#instantiation[`new Drawer()` and `new Cabinet()`], and can also be found attached to the Drawer element, under the `drawer` property.
@@ -182,9 +297,7 @@ See link:#config[Config] for full settings documentation.
 `addKnob(knob)`:: Adds a link:#knobs[Knob].
 `cycle(states)`:: Advances the Drawer through states.
 If the `states` argument is undefined/not passed, then it will move to the next state defined in settings.
-If the `states` argument is an array of valid states
-(that is, states that also appear in the settings)
-then it will move to the next valid state in that array.
+If the `states` argument is an array of valid states (that is, states that also appear in the settings) then it will move to the next valid state in that array.
 See the link:src/drawer.ts[function definition] for more information.
 `addAction(action)`:: Add a callback that will be called when the Drawer detects a state change.
 The callback recieves the following arguments:
@@ -207,19 +320,19 @@ You can attach a Knob to a Drawer in one of three ways:
 +
 [source,javascript]
 ----
-new Drawer(`.drawer`, {knobs: [`.knob`]})
+new Drawer('.drawer', {knobs: ['.knob']})
 ----
 
 . Use `addKnob` to add a Knob to an already instantiated Drawer:
 +
 [source,javascript]
 ----
-(new Drawer(`.drawer`)).addKnob(`.knob`);
+(new Drawer('.drawer')).addKnob('.knob');
 
 // or
 
-const {addKnob} = document.querySelector(`drawer`).drawer;
-addKnob(`.knob`);
+const {addKnob} = document.querySelector('drawer').drawer;
+addKnob('.knob');
 ----
 
 . Provide a selector in the `data-knob` attribute:
@@ -240,7 +353,7 @@ The following is a simple, complete example that will result in a drawer that ca
 ----
 import {Drawer} from "murmur-drawer";
 
-new Drawer(document.querySelector(`.drawer`));
+new Drawer(document.querySelector('.drawer'));
 ----
 
 [source,html]
@@ -260,22 +373,20 @@ In both cases, actions have an essentially identical signature:
 +
 This is an array of link:https://developer.mozilla.org/en-US/docs/Web/API/MutationRecord[MutationRecords], each of which describes an observed mutation change.
 For most actions, you will be primarily concerned with these items, because they tell you what has just happened.
-. `el`
+. `api`
 +
-The element that this action is attached to:
+This is the API for the thing that this action is attached to;
 A Knob or a Drawer.
 Notably this is *not* the element that is being observed;
 if you want that element it can be found in `MutationRecord.target`.
-This element is made available in the event that you want it to react to the mutation.
+The API is made available here so that the action can make its host do things in response to the event.
 . `observer`
 +
 The observer that observed this mutation.
-In most cases you won't need this, but it some situations it may be useful,
-i.e. if you want to respond to a particular mutation by ceasing to observe.
+In most cases you won't need this, but it some situations it may be useful, i.e. if you want to respond to a particular mutation by ceasing to observe.
 
 The MutationObservers here are limited:
-Both watch only for changes to the `data-state` and `hidden` attributes on drawers, and only on the element itself
-(children are ignored).
+Both watch only for changes to the `data-state` and `hidden` attributes on drawers, and only on the element itself (children are ignored).
 However, sometimes both will trigger at the same time, i.e. if the Drawer moves into a hidden state.
 `MutationRecord.attributeName` will tell you which particular attribute generated a particular MutationRecord.
 `MutationRecord.oldValue` will tell you what the attribute mutated _from_.
@@ -293,13 +404,11 @@ function someAction(list) {
 [NOTE]
 ====
 If `settings.initState` differs from the state set on the Drawer at instantiation, the Drawer will fire an action as the states are brought into alignment.
-If the Drawer had no state before instantiation
-(i.e. it had no `data-state` attribute)
-then `MutationRecord.oldValue` will be `undefined`.
+If the Drawer had no state before instantiation (i.e. it had no `data-state` attribute) then `MutationRecord.oldValue` will be `undefined`.
 This can be a good way to know when an action is being run for the first time, although there is no guarantee this is the case.
 ====
 
-When adding actions to a drawer, you are encouraged to write named functions and then pass those as callbacks, rather than using anonymous/arrow functions.
+When adding actions, you are encouraged to write named functions and then pass those as callbacks, rather than using anonymous/arrow functions.
 This makes it easier to identify and potentially modify the actions assigned to a Drawer or Knob.
 
 [source,javascript]
@@ -308,13 +417,27 @@ This makes it easier to identify and potentially modify the actions assigned to 
 function doSomeAction(list, el, observer) {
     // do something
 }
-drawerAPI.addAction(doSomeAction);
+api.actions = doSomeAction;
+
+// good
+const doAnotherAction = (list, api, observer) => {
+    // do another thing
+};
+api.actions = doAnotherAction;
+
+// bad
+api.actions = (list, api, observer) => {
+    // do a mysterious thing
+};
 
 // later we could easily remove this action
 drawerAPI.settings = drawerAPI.settings.filter(action => action.name !== 'doSomeAction');
 ----
 
+If a callback you pass doesn't have a name that Drawer can determine, it will be given a randomly-generated name by `uuid()`.
+
 == Further Reading
+
 Drawer is several dozen lines of code that manage, essentially, one thing:
 
 [source,html]
@@ -338,7 +461,6 @@ setState(`closed`);
 // Direct access
 drawer.dataset.state = `closed`;
 ----
-
 
 == Goals
 
@@ -384,13 +506,11 @@ Documentation should also make it clear that setting must be done through the se
 - In general, things that use settings should check the setting every time they take an action that could be affected by the setting; not once at object creation
 - Getters return defaults if not value set (this is how defaults are stored)
 
-
 == Store
 
 - Dynamic
 - Tracks things that can and will change (i.e. Drawers, Knobs, etc)
 - Setters can (and often do) have side effects, i.e. 'set'ing a drawer on a knob triggers the creation of an observer
-
 
 == Storing Knobs & Drawers, Where?
 
@@ -417,9 +537,7 @@ Still, it's not hard to to think that at some point you might want to query a dr
 
 . `new Knob({ drawers: ['div'] })` says to create a knob, and add the `div` element(s) as drawer(s).
 . Find all elements that match `div` and iterate over them
-. For each matched element, get the API. If there is no API, skip that drawer and remove it from the list
-(i.e. we only want pre-existing drawers)
-.Tell the API to attach this knob
+. For each matched element, get the API. If there is no API, skip that drawer and remove it from the list (i.e. we only want pre-existing drawers) .Tell the API to attach this knob
 
 
 The issue here is that the way I've set it up w/ getters and setters, we get into a recursive circle when a knob tries to add itself to a drawer as a result of a setter call.
@@ -427,10 +545,8 @@ In other words we want `KnobAPI.drawers = thisDrawer` to do two different things
 
 The idea of using getters/setters for functionality is to help isolate functionality, settings, etc, to individual elements, and not rely on other elements for help.
 So what is `KnobAPI.drawers = drawer` saying?
-"We want to watch this drawer"
-What is `DrawerAPI.knobs = knob` saying?
-"We want this knob to watch us"
-Watching a drawer should be functionality left entirely up to the Knob.
+"We want to watch this drawer" What is `DrawerAPI.knobs = knob` saying?
+"We want this knob to watch us" Watching a drawer should be functionality left entirely up to the Knob.
 I think in that case, `DrawerAPI.knobs.set` _shouldn't put anything in the drawer store_.
 Instead, it should simply dispatch a call to the relevant knobs to attach themselves, and they'll store themselves in the drawer store by accessing the repo directly--_not_ by using the setter!
 
@@ -444,5 +560,4 @@ There are a couple of different things happening here:
 . Telling the drawer its initial hash (if present)
 
 I think i want to handle this by having a "load" step during instantiation where all of these things are handled.
-Each will be handled individually;
-there aren't enough things to make that onerous, and I don't want to engage in overzealous/overeager "optimization".
+Each will be handled individually; there aren't enough things to make that onerous, and I don't want to engage in overzealous/overeager "optimization".
