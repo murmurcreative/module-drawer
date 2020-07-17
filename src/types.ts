@@ -90,10 +90,13 @@ namespace IDrawer {
         knobs: Map<IKnob.Element, IKnob.API>;
     }
 
+    export interface KnobSetupSettings extends IKnob.Settings {
+        actions: Array<IActions.Observe>;
+    }
+
     export interface KnobSetup {
         elements: Array<HTMLElement | string>;
-        settings: IKnob.Settings;
-        actions: Array<IActions.Observe>;
+        settings: KnobSetupSettings;
     }
 
     export interface Element extends HTMLElement {
