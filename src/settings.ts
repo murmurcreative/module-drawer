@@ -1,6 +1,17 @@
 import {isValidHash} from "./hash";
-import {urlify} from "./util";
-import isCallable from "is-callable";
+import {getDefaults, urlify, uuid} from "./util";
+
+function setUpSettings(settings) {
+    Object.defineProperties(settings, {
+        repo: {
+            value: new Map(),
+            writable: true,
+        },
+        append: {
+            value: append.bind(settings),
+        },
+    });
+}
 
 /**
  * This will append items to a settings item that is an array.
@@ -9,179 +20,23 @@ import isCallable from "is-callable";
  * @param name
  * @param row
  */
-function append(name, row) {
-    if (!this.store.has(name)) {
-        this.store.set(name, [row]);
+function append(name: string, row: any) {
+    if (!this.repo.has(name)) {
+        this.repo.set(name, [row]);
     } else {
-        let current = this.store.get(name);
+        let current = this.repo.get(name);
         current.push(row);
-        this.store.set(name, current);
+        this.repo.set(name, current);
     }
 }
 
-function DrawerSettings(userSettings) {
-    /**
-     * This is where settings are kept internally.
-     */
-    this.store = new Map();
-
-    this.append = (name, row) => append.bind(this);
-
-    this.inStates = (state: string) => {
-        return this.store.get('states').indexOf(state) > -1;
-    };
-
-    /**
-     * Set some defaults.
-     */
-    drawerDefaults()
-        .map(row => {
-            const [name, value] = row;
-            this.store.set(name, value);
-        });
-
-    const {append, inStates, store} = this;
-
+function DrawerSettings() {
+    setUpSettings(this);
 
     Object.defineProperties(this, {
-        states: {
-            get: () => store.get('states') || [],
-            set: (arg: string | Array<string>) => {
-                if (typeof arg === 'string') {
-                    append('states', arg);
-                } else if (Array.isArray(arg)) {
-                    store.set('states', arg);
-                }
-            }
+        inStates: {
+            value: (state: string): boolean => this.states.indexOf(state) > -1,
         },
-        initState: {
-            get: () => store.get('initState') || store.get('states')[0],
-            set: (arg) => {
-                if (typeof arg === 'string' && inStates(arg)) {
-                    store.set('initState', arg);
-                } else {
-                    store.set('initState', false);
-                }
-            }
-        },
-        hiddenStates: {
-            get: () => store.get('hiddenStates') || [],
-            set: (arg) => {
-                if (typeof arg === 'string' && inStates(arg)) {
-                    append('hiddenStates', arg);
-                } else if (Array.isArray(arg)) {
-                    const validHiddenStates = arg.filter(state => inStates(state));
-                    store.set('hiddenStates', validHiddenStates);
-                }
-            }
-        },
-        hash: {
-            get: () => store.get('hash') || '',
-            set: (arg) => {
-                if (isValidHash(arg)) {
-                    store.set('hash', urlify(arg));
-                }
-            }
-        },
-        hashState: {
-            get: () => {
-                if (!store.get('hashState')) {
-                    const nonHiddenStates = store.get('states').filter(x => !store.get('hiddenStates').includes(x));
-                    return nonHiddenStates[0] || '';
-                }
-                return store.get('hashState');
-            },
-            set: (arg) => {
-                if (typeof arg === 'string' && inStates(arg) && store.get('hiddenState').indexOf(arg) < 0) {
-                    store.set('hashState', arg);
-                }
-            }
-        },
-        actions: {
-            get: () => store.get('actions') || [],
-            set: (arg) => {
-                if (isCallable(arg)) {
-                    append('actions', arg);
-                }
-            }
-        },
-        uuid: {
-            get: () => store.get('uuid') || undefined,
-            set: (arg) => {
-                if (isCallable(arg)) {
-                    store.set('uuid', arg);
-                } else {
-                    store.set('uuid', undefined);
-                }
-            }
-        },
-        knobsCycle: {
-            get: () => store.get('knobsCycle') || true,
-            set: (arg) => store.set('knobsCycle', Boolean(arg))
-        },
-        knobActions: {
-            get: () => store.get('knobActions') || [],
-            set: (arg) => {
-                if (isCallable(arg)) {
-                    append('knobActions', arg);
-                } else if (Array.isArray(arg)) {
-                    store.set('knobActions', arg.filter(isCallable));
-                }
-            }
-        },
-        knobAccessibility: {
-            get: () => store.get('knobAccessibility') || [],
-            set: (arg) => Boolean(arg)
-        }
-    });
-
-    /**
-     * Apply any user settings
-     */
-    if (typeof userSettings === 'object') {
-        for (const prop in userSettings) {
-            if (this.hasOwnProperty(prop)) {
-                this[prop] = userSettings[prop];
-            }
-        }
-    }
-}
-
-function KnobSettings(userSettings) {
-    /**
-     * This is where settings are kept internally.
-     */
-    this.store = new Map();
-
-    this.append = (name, row) => append.bind(this);
-
-    const {store, append} = this;
-
-    Object.defineProperties(this, {
-        cycle: {
-            get: () => store.get('cycle') || true,
-            set: (arg) => store.set(`cycle`, Boolean(arg)),
-        },
-        accessibility: {
-            get: () => store.get('actions') || true,
-            set: (arg) => store.set('actions', Boolean(arg))
-        },
-    });
-
-    /**
-     * Apply any user settings
-     */
-    if (typeof userSettings === 'object') {
-        for (const prop in userSettings) {
-            if (this.hasOwnProperty(prop)) {
-                this[prop] = userSettings[prop];
-            }
-        }
-    }
-}
-
-function drawerDefaults() {
-    return [
         /**
          * This is a list of states the drawer can have. The names of the terms have
          * no internal meaning: They will be used to populated `data-state` and will
@@ -190,11 +45,32 @@ function drawerDefaults() {
          * `cycle()` will move from the current state to the next state in this list,
          * and then start again from the first item when it reaches the end.
          */
-        ['states', [
-            `closed`,
-            `open`,
-        ]],
-        ['initState', undefined], // This will default to the first state in the states array.
+        states: {
+            enumerable: true,
+            get: () => this.repo.get('states') || [`open`, `closed`],
+            set: (arg: string | Array<string>) => {
+                if (typeof arg === 'string') {
+                    append('states', arg);
+                } else if (Array.isArray(arg)) {
+                    this.repo.set('states', arg);
+                }
+            }
+        },
+        /**
+         * This is the state that the drawer should start in. If it's not set,
+         * it'll default to the first state described in `states`.
+         */
+        initState: {
+            enumerable: true,
+            get: () => this.repo.get('initState') || this.states[0],
+            set: (arg: string) => {
+                if (typeof arg === 'string' && this.inStates(arg)) {
+                    this.repo.set('initState', arg);
+                } else {
+                    this.repo.set('initState', false);
+                }
+            }
+        },
         /**
          * These are states from the `states` array that are considered "closed".
          * Without other configuration, this means that when the drawer enters one
@@ -203,9 +79,18 @@ function drawerDefaults() {
          *
          * To disable this behavior, just make this an empty array.
          */
-        ['hiddenStates', [
-            `closed`,
-        ]],
+        hiddenStates: {
+            enumerable: true,
+            get: () => this.repo.get('hiddenStates') || [`closed`],
+            set: (arg: string | Array<string>) => {
+                if (typeof arg === 'string' && this.inStates(arg)) {
+                    append('hiddenStates', arg);
+                } else if (Array.isArray(arg)) {
+                    const validHiddenStates = arg.filter(state => this.inStates(state));
+                    this.repo.set('hiddenStates', validHiddenStates);
+                }
+            }
+        },
         /**
          * The hash will be appended to the URL when the Drawer is in the state
          * described in hashState. If hash is not a string with a length greater
@@ -213,56 +98,83 @@ function drawerDefaults() {
          * hashState is not, then the de facto hash-state will be the first non-
          * hidden state found in states.
          */
-        ['hash', ''],
+        hash: {
+            enumerable: true,
+            get: () => this.repo.get('hash') || '',
+            set: (arg: string) => {
+                if (isValidHash(arg)) {
+                    this.repo.set('hash', urlify(arg));
+                }
+            }
+        },
         /**
          * When this state is active on the drawer, the hash will be added to the
          * url, and this state will be activated if the hash is in the URL. If
          * this is set but hash is not valid, nothing will happen.
          */
-        ['hashState', ''],
-        /**
-         * Functions to be run when the drawer observes a change it its
-         * state or hidden attribute.
-         */
-        ['actions', []],
+        hashState: {
+            enumerable: true,
+            get: () => {
+                if (!this.repo.get('hashState')) {
+                    const nonHiddenStates = this.states
+                        .filter(x => this.hiddenStates.indexOf(x) < 0);
+                    return nonHiddenStates[0] || '';
+                }
+                return this.repo.get('hashState');
+            },
+            set: (arg: string) => {
+                if (typeof arg === 'string' && this.inStates(arg) && this.repo.get('hiddenState').indexOf(arg) < 0) {
+                    this.repo.set('hashState', arg);
+                }
+            }
+        },
         /**
          * If you need better uuids, pass a callback to this function that
          * generates them.
          */
-        ['uuid', undefined],
-        /**
-         * List of knobs to activate.
-         *
-         * We don't define any default knob selectors because it
-         * would be very confusing behavior. Knobs are strictly
-         * opt-in.
-         */
-        ['knobs', new Map()],
-        /**
-         * Whether or not clicking on a knob fires the `cycle()` method
-         * on any attached drawer(s).
-         *
-         * If you want more complex behavior for your knobs (or your knobs
-         * won't be dispatching the `click` event on activation) then set
-         * this to false.
-         *
-         * Has no effect if there are no attached knobs.
-         */
-        ['knobsCycle', true],
-        /**
-         * An array of functions that will be called when knobs handle the
-         * knobState event. Each function will be passed the event as the
-         * first argument, and the current knob as the second.
-         */
-        ['knobActions', []],
-        /**
-         * Whether or not to enable accessibility features on knobs.
-         * Generally this should be true, but for some knob use cases
-         * (i.e. non-interactive knobs) accessibility features may be
-         * unnecessary or problematic.
-         */
-        ['knobAccessibility', true],
-    ];
+        uuid: {
+            enumerable: true,
+            get: () => this.repo.get('uuid') || uuid,
+            set: (arg: Function) => {
+                this.repo.set('uuid', arg);
+            }
+        },
+    });
+
+    // Now set up defaults
+    Object.defineProperty(this, 'defaults', {
+        value: getDefaults.bind(this)(),
+    });
 }
 
-export {drawerDefaults, DrawerSettings, KnobSettings}
+function KnobSettings() {
+    setUpSettings(this);
+
+    Object.defineProperties(this, {
+        /**
+         * When true, clicking this knob will cycle all attached drawers.
+         */
+        cycle: {
+            enumerable: true,
+            get: () => this.repo.get('cycle') || true,
+            set: (arg) => this.repo.set(`cycle`, Boolean(arg)),
+        },
+        /**
+         * When true, this will enable all knob-related accessiblity featured,
+         * mainly aria attributes.
+         */
+        accessibility: {
+            enumerable: true,
+            get: () => this.repo.get('actions') || true,
+            set: (arg) => this.repo.set('actions', Boolean(arg))
+        },
+    });
+
+    // Now set up defaults
+    Object.defineProperty(this, 'defaults', {
+        value: getDefaults.bind(this)(),
+    });
+
+}
+
+export {DrawerSettings, KnobSettings}

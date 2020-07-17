@@ -1,16 +1,16 @@
-import {flattenSingle, isEl, sel, uuid} from "./util";
+import {flattenSingle, getDefaults, isEl, sel, uuid} from "./util";
 import {getKnob, Knob} from "./knob";
-import {IDrawer, IKnob} from "./types";
+import {IActions, IDrawer, IKnob} from "./types";
 import {getDrawer} from "./drawer";
 
-function getImmutableMap(key, fallback) {
+function getImmutableMap(key: string, fallback?: Iterable<any>) {
     if (undefined === fallback) {
         fallback = [];
     }
     return new Map(this.repo.get(key) || fallback);
 }
 
-function getImmutableArray(key, fallback) {
+function getImmutableArray(key: string, fallback: Array<any>) {
     if (undefined === fallback) {
         fallback = [];
     }
@@ -22,13 +22,20 @@ function getImmutableArray(key, fallback) {
  * Set up a basic store.
  * @param store
  */
-function setUpStore(store) {
-    store.repo = new Map();
-
-    store.mapGet = getImmutableMap.bind(store);
-
+function setUpStore(store): void {
     Object.defineProperties(store, {
+        repo: {
+            value: new Map(),
+            writable: true,
+        },
+        mapGet: {
+            value: getImmutableMap.bind(store),
+        },
+        arrayGet: {
+            value: getImmutableArray.bind(store),
+        },
         mount: {
+            enumerable: true,
             get: () => store.repo.get('mount') || undefined,
             set: (element) => {
                 // Can only be mounted once
@@ -38,8 +45,9 @@ function setUpStore(store) {
             }
         },
         actions: {
+            enumerable: true,
             get: () => store.mapGet('actions'),
-            set: (action) => {
+            set: (action: IActions.Observe) => {
                 // "lazy"-initialization
                 if (store.actions.size < 1) {
                     store.repo.set('actions', store.actions);
@@ -65,6 +73,7 @@ function DrawerStore() {
 
     Object.defineProperties(this, {
         knobs: {
+            enumerable: true,
             get: (): Map<IKnob.Element, IKnob.API> => this.mapGet('knobs'),
             set: (arg: Array<string | HTMLElement> | string | HTMLElement | IDrawer.KnobSetup) => {
                 if (this.knobs.size < 1) {
@@ -74,32 +83,38 @@ function DrawerStore() {
                 let settings = {};
                 if (Array.isArray(arg)) {
                     knobs = flattenSingle(arg.map(sel));
-                } else if (arg.hasOwnProperty('elements') && arg.hasOwnProperty('settings')) {
+                } else if (arg.hasOwnProperty('elements')
+                    && arg.hasOwnProperty('settings')) {
                     /**
                      * This allows for passing knob settings by passing an object with
                      * the following shape:
                      * {
                      *     elements: ['selector', elementObject],
                      *     settings: {
-                     *         doCycle: true,
+                     *         cycle: true,
                      *         accessibility: false,
                      *         ...
                      *     }
                      * }
                      */
-                    const {settings, elements} = <IDrawer.KnobSetup>arg;
-                    knobs = flattenSingle(elements.map(sel));
+                    knobs = flattenSingle((arg as IDrawer.KnobSetup).elements.map(sel));
+                    settings = (arg as IDrawer.KnobSetup).settings;
                 } else {
                     knobs = sel(arg);
                 }
-                knobs.map(knob => {
+                knobs.map((knob: HTMLElement) => {
                     // Settings are only applied if this is a new Knob.
                     const api = getKnob(knob) || new Knob(knob, settings);
                     api.drawers = this.mount; // Knob will take care of the rest
                 });
             }
         },
-    })
+    });
+
+    // Now set up defaults
+    Object.defineProperty(this, 'defaults', {
+        value: getDefaults.bind(this)(),
+    });
 }
 
 function KnobStore() {
@@ -107,8 +122,9 @@ function KnobStore() {
 
     Object.defineProperties(this, {
         drawers: {
+            enumerable: true,
             get: () => this.mapGet('drawers'),
-            set: (drawer) => {
+            set: (drawer: string | Array<string> | HTMLElement) => {
                 // "lazy"-initialization
                 if (this.drawers.size < 1) {
                     this.repo.set('drawers', this.drawers)
@@ -122,10 +138,10 @@ function KnobStore() {
                 }
 
                 drawers
-                    .filter((drawer: IDrawer.Element) => {
+                    .filter((drawer: HTMLElement): drawer is IDrawer.Element  => {
                         return getDrawer(drawer) !== undefined
                     })
-                    .map(drawer => {
+                    .map((drawer: IDrawer.Element) => {
                         // Create observer
                         const observer = new MutationObserver((list, observer) => {
                             if (this.repo.get('actions').size > 0) {
@@ -162,7 +178,12 @@ function KnobStore() {
                     });
             },
         },
-    })
+    });
+
+    // Now set up defaults
+    Object.defineProperty(this, 'defaults', {
+        value: getDefaults.bind(this)(),
+    });
 }
 
 export {KnobStore, DrawerStore}

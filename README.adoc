@@ -433,3 +433,16 @@ What is `DrawerAPI.knobs = knob` saying?
 Watching a drawer should be functionality left entirely up to the Knob.
 I think in that case, `DrawerAPI.knobs.set` _shouldn't put anything in the drawer store_.
 Instead, it should simply dispatch a call to the relevant knobs to attach themselves, and they'll store themselves in the drawer store by accessing the repo directly--_not_ by using the setter!
+
+=== Setup Settings
+
+There are a couple of different things happening here:
+
+. Telling a drawer what element to mount on
+. Giving the drawer a list of knobs that need to be attached
+. Telling the drawer its initial state
+. Telling the drawer its initial hash (if present)
+
+I think i want to handle this by having a "load" step during instantiation where all of these things are handled.
+Each will be handled individually;
+there aren't enough things to make that onerous, and I don't want to engage in overzealous/overeager "optimization".

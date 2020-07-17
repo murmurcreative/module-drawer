@@ -3,6 +3,8 @@
  * @param el
  * @returns {boolean}
  */
+import {ISettings} from "./types";
+
 const isEl = (el: any): boolean => (el instanceof Element) || (el instanceof HTMLDocument);
 
 const tagRegex = /^\w*.$/;
@@ -89,4 +91,48 @@ function uuid(): string {
     });
 }
 
-export {isEl, sel, merge, flattenSingle, urlify, uuid}
+function resolveLoadArguments(
+    user: ISettings.Default,
+    collected: Map<string, any>,
+    settings: Array<string>,
+    stores: Array<string>,
+) {
+    if (typeof user === 'object') {
+        Object.keys(user).map((key: string) => {
+            // Skip args that have already been set
+            if (!collected.has(key)) {
+                if (settings.indexOf(key) > -1
+                    || stores.indexOf(key) > -1) {
+                    collected.set(key, user[key]);
+                }
+            }
+        })
+    }
+
+    if (collected.size > 0) {
+        collected.forEach((value: any, key: string) => {
+            /**
+             * This assumes there will be no overlap, and if there is, then
+             * settings will take precedence.
+             */
+            if (settings.indexOf(key) > -1) {
+                this.settings[key] = value;
+            } else if (stores.indexOf(key) > -1) {
+                this.store[key] = value;
+            }
+        });
+    }
+}
+
+/**
+ * Bound to stores and settings objects to return their defaults.
+ */
+function getDefaults(): Map<string, any> {
+    const defaults = new Map();
+    Object.keys(this).map(key => {
+        defaults.set(key, this[key]);
+    });
+    return defaults;
+}
+
+export {isEl, sel, merge, flattenSingle, urlify, uuid, getDefaults, resolveLoadArguments}

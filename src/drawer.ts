@@ -1,46 +1,47 @@
-import {flattenSingle, isEl, merge, sel, urlify, uuid} from "./util";
+import {resolveLoadArguments, uuid} from "./util";
 import {DrawerSettings} from "./settings";
-import {DrawerElement, DrawerAPI, IngestedSettings, KnobElement, IDrawer} from "./types";
+import {IActions, IDrawer, IKnob} from "./types";
 import {clearHash, extractHash, ifValidHash, isValidHash, setHash, wipeHash} from "./hash";
 import {DrawerStore} from "./stores";
 
 /**
  * Activate a drawer.
  * @param el
- * @param userSettings
+ * @param userArguments
  */
-function Drawer(el: IDrawer.Element, userSettings?) {
-    this.settings = ingestSettingsFromEl(el, new DrawerSettings(userSettings));
+function Drawer(el: HTMLElement, userArguments: IDrawer.Settings | object | undefined) {
+    /** ==== Initialize the API ==== */
+    this.settings = new DrawerSettings();
     this.store = new DrawerStore();
 
     Object.defineProperties(this, {
         mount: {
             get: () => this.store.mount,
-            set: (mount) => this.store.mount = mount,
+            set: (mount: IDrawer.Element) => this.store.mount = mount,
         },
         state: {
-            get: () => this.mount.dataset.state,
-            set: (state) => {
+            get: (): string => this.mount.dataset.state,
+            set: (state: string) => {
                 if (this.settings.states.indexOf(state) > -1) {
                     this.mount.dataset.state = state;
                 }
             },
         },
         hidden: {
-            get: () => this.mount.hidden,
-            set: (hide) => this.mount.hidden = Boolean(hide),
+            get: (): boolean => this.mount.hidden,
+            set: (hide: boolean) => this.mount.hidden = Boolean(hide),
         },
         hash: {
-            get: () => this.settings.hash,
-            set: (hash) => this.settings.hash = hash,
+            get: (): string => this.settings.hash,
+            set: (hash: string) => this.settings.hash = hash,
         },
         actions: {
-            get: () => this.store.actions,
-            set: (action) => this.store.actions = action,
+            get: (): Map<string, IActions.Observe> => this.store.actions,
+            set: (action: IActions.Observe) => this.store.actions = action,
         },
         knobs: {
-            get: () => this.store.knobs,
-            set: (knob) => this.store.knobs = knob
+            get: (): Map<IKnob.Element, IKnob.API> => this.store.knobs,
+            set: (knob: string | HTMLElement | Array<HTMLElement | string>) => this.store.knobs = knob
         },
     });
 
@@ -52,8 +53,9 @@ function Drawer(el: IDrawer.Element, userSettings?) {
     };
 
     // Add function for moving through states
-    this.cycle = (states: Array<string>) => cycle(el, states);
+    this.cycle = (states: Array<string>) => cycle(this.mount, states);
 
+    /** ==== Set up actions ==== */
     // Couple state to hidden attribute
     this.actions = hiddenCallback;
 
@@ -69,12 +71,11 @@ function Drawer(el: IDrawer.Element, userSettings?) {
         this.mount.id = this.settings.uuid ? this.settings.uuid() : uuid();
     }
 
-    // DEBUG
-    // add knob
-    this.knobs = 'button';
+    /** ==== Load settings and stores ==== */
+    loadUserArguments.bind(this)(userArguments);
 
-    const watcher = new MutationObserver((list, observer) => handleMutation.bind(this)(list, observer));
-    this.observer = watcher.observe(this.mount,{
+    const watcher = new MutationObserver((list: Array<MutationRecord>, observer: MutationObserver) => handleMutation.bind(this)(list, observer));
+    this.observer = watcher.observe(this.mount, {
         attributes: true,
         attributeFilter: [`data-state`, `hidden`],
         attributeOldValue: true,
@@ -94,15 +95,21 @@ function Drawer(el: IDrawer.Element, userSettings?) {
     this.state = this.settings.initState;
 }
 
-function getDrawer(el: IDrawer.Element): IDrawer.API {
-    if (el.hasOwnProperty(`drawer`) && el.drawer?.mount) {
+/**
+ * Get the API if it exists.
+ * Also useful for determining if an element has a drawer attached or not.
+ * @param el
+ */
+function getDrawer(el: HTMLElement | IDrawer.Element): IDrawer.API | undefined {
+    if (`drawer` in el) {
         return el.drawer;
+    } else {
+        return undefined;
     }
-    return undefined;
 }
 
-function handleMutation(list, observer) {
-    this.actions.forEach(action => action(list, this, observer));
+function handleMutation(list: Array<MutationRecord>, observer: MutationObserver) {
+    this.actions.forEach((action: IActions.Observe) => action(list, this, observer));
 }
 
 /**
@@ -112,7 +119,7 @@ function handleMutation(list, observer) {
  */
 function hiddenCallback(list: Array<MutationRecord>, api: IDrawer.API): void {
     for (let i = 0; i < list.length; i++) {
-        const { attributeName } = list[i];
+        const {attributeName} = list[i];
 
         if (`data-state` === attributeName) {
             api.hidden = api.settings.hiddenStates.indexOf(api.state) > -1;
@@ -128,7 +135,7 @@ function hiddenCallback(list: Array<MutationRecord>, api: IDrawer.API): void {
 function hashCallback(list: Array<MutationRecord>, api: IDrawer.API): void {
     for (let i = 0; i < list.length; i++) {
         const {attributeName} = list[i];
-        const { settings: { hashState }, state, hasher: { setUrl, clearUrl } } = api;
+        const {settings: {hashState}, state, hasher: {setUrl, clearUrl}} = api;
         if (`data-state` === attributeName) {
             if (state === hashState) {
                 setUrl();
@@ -144,79 +151,42 @@ function hashCallback(list: Array<MutationRecord>, api: IDrawer.API): void {
  * If it is passed an array of states
  */
 function cycle(el: IDrawer.Element, limitedStates?: Array<string>) {
-    const {drawer, drawer: {settings: {states}}} = el;
-    const curIndex = states.indexOf(drawer.state);
-    let nextState = states[curIndex + 1] || states[0];
+    const api = getDrawer(el);
+    if (api) {
+        const {settings: {states}} = api;
+        const curIndex = states.indexOf(api.state);
+        let nextState = states[curIndex + 1] || states[0];
 
-    // If states have been passed, cycle only through those
-    if (limitedStates) {
-        const potentialCustomState = limitedStates[limitedStates.indexOf(drawer.state) + 1] || limitedStates[0];
-        // Only allow valid states
-        if (states.indexOf(potentialCustomState) > -1) {
-            nextState = potentialCustomState;
+        // If states have been passed, cycle only through those
+        if (limitedStates) {
+            const potentialCustomState = limitedStates[limitedStates.indexOf(api.state) + 1] || limitedStates[0];
+            // Only allow valid states
+            if (states.indexOf(potentialCustomState) > -1) {
+                nextState = potentialCustomState;
+            }
         }
-    }
 
-    drawer.state = nextState;
-}
-
-/**
- * Pull any relevant settings from the drawer HTML.
- *
- * These will override all other settings.
- * @param el
- * @param settings
- * @returns {*}
- */
-function ingestSettingsFromEl(el: HTMLElement, settings) {
-    const {state, knob, hash, hashState} = el.dataset;
-
-    // data-state="initial state"
-    if (state
-        && settings.states.indexOf(state) > -1 // is valid state
-    ) settings.initState = state;
-
-    // data-knob="knob selector"
-    if (knob) settings.knobs = knob;
-
-    // data-hash="hash-string"
-    if (hash !== undefined) settings.hash = hash;
-
-    // data-hashState="state"
-    if (hashState
-        && settings.states.indexOf(hashState) > -1 // is valid state
-        && settings.hiddenStates.indexOf(hashState) < 0 // is not a hidden state
-    ) this.hashState = hashState;
-
-    return settings;
-}
-
-/**
- * Get the state (i.e. open or closed).
- * @returns {string}
- */
-function getState(el: DrawerElement) {
-    return el.dataset.state;
-}
-
-/**
- * Set the state on an element.
- * @param el
- * @param state
- */
-function setState(el: DrawerElement, state: string) {
-    if (el.dataset.state !== state) {
-        el.dataset.state = state;
+        api.state = nextState;
     }
 }
 
 /**
- * Set the hidden attribute on an element.
- * @param el
- * @param hide
+ * Handle loading arguments passed directly, and described on the element.
+ * @param userArguments
  */
-function setHidden(el: DrawerElement, hide: boolean) {
-    el.hidden = hide;
+function loadUserArguments(userArguments: IDrawer.Settings) {
+    const allowedSettings = Object.keys(this.settings);
+    const allowedStores = Object.keys(this.store);
+    const collectedArguments = new Map();
+
+    // Handle items described in element HTML
+    const {dataset} = this.mount;
+    if (dataset.state) collectedArguments.set('initState', dataset.state);
+    if (dataset.knob) collectedArguments.set('knobs', dataset.knob);
+    if (dataset.hash) collectedArguments.set('hash', dataset.hash);
+    if (dataset.hashState) collectedArguments.set('hashState', dataset.hashState);
+
+    resolveLoadArguments.bind(this)(userArguments, collectedArguments, allowedSettings, allowedStores);
 }
 
-export {Drawer, cycle, getState, setState, setHidden, getDrawer}
+export {Drawer, getDrawer, cycle}

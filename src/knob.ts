@@ -1,27 +1,9 @@
-import {isEl, sel} from "./util";
-import {
-    DrawerElement,
-    KnobElement,
-    KnobAction,
-    KnobSettingsInterface,
-    DrawerAPI,
-    KnobAPI,
-    IKnob,
-    IDrawer
-} from "./types";
+import {isEl, resolveLoadArguments, sel} from "./util";
+import {IKnob, IDrawer, IActions} from "./types";
 import {KnobSettings} from "./settings";
 import {KnobStore} from "./stores";
+import {getDrawer} from "./drawer";
 
-/**
- * Get the knob on an element.
- * @param el
- */
-function getKnob(el: KnobElement): KnobAPI | undefined {
-    if (el.hasOwnProperty(`knob`) && el.knob?.mount) {
-        return el.knob;
-    }
-    return undefined;
-}
 
 /**
  * Create a new knob on an element.
@@ -32,32 +14,34 @@ function getKnob(el: KnobElement): KnobAPI | undefined {
  * Otherwise you will like get undesirable behavior.
  *
  * @param el
- * @param userSettings
+ * @param userArguments
  * @constructor
  */
-function Knob(el: IKnob.Element, userSettings) {
-    this.settings = new KnobSettings(userSettings);
+function Knob(el: HTMLElement, userArguments: IKnob.Settings | object | undefined) {
+    this.settings = new KnobSettings();
     this.store = new KnobStore();
 
     // Proxy things in settings and stores to the Knob itself
     Object.defineProperties(this, {
         mount: {
-            get: (): KnobElement => this.store.mount,
+            get: (): IKnob.Element => this.store.mount,
             set: (element) => this.store.mount = element,
         },
         actions: {
             get: () => this.store.actions,
-            set: (action) => this.store.actions = action
+            set: (action: IActions.Observe) => this.store.actions = action
         },
         drawers: {
             get: () => this.store.drawers,
-            set: (drawers) => this.store.drawers = drawers,
+            set: (drawers: string | HTMLElement | Array<HTMLElement | string>) => this.store.drawers = drawers,
         },
     });
 
     // Attach API
     this.mount = el;
     this.mount.knob = this;
+
+    loadUserArguments.bind(this)(userArguments);
 
     this.actions = handleAriaExpandedState;
 
@@ -66,10 +50,21 @@ function Knob(el: IKnob.Element, userSettings) {
 }
 
 /**
+ * Get the knob on an element.
+ * @param el
+ */
+function getKnob(el: HTMLElement | IKnob.Element): IKnob.API | undefined {
+    if (`knob` in el) {
+        return el.knob;
+    }
+    return undefined;
+}
+
+/**
  * Actions to be executed when a drawer is added to this Knob.
  * @param event
  */
-function handleDrawerAddedEvent(event) {
+function handleDrawerAddedEvent(event: IKnob.Event) {
     const {drawer} = event.detail.drawer;
 
     setAriaExpanded(this, drawer);
@@ -82,11 +77,11 @@ function handleDrawerAddedEvent(event) {
  * @param list
  * @param api
  */
-function handleAriaExpandedState(list, api: IKnob.API) {
+function handleAriaExpandedState(list: Array<MutationRecord>, api: IKnob.API) {
     for (let i = 0; i < list.length; i++) {
-        const {attributeName, target: { drawer }} = list[i];
+        const {attributeName, target} = list[i];
         if (`hidden` === attributeName) {
-            setAriaExpanded(api, drawer);
+            setAriaExpanded(api, getDrawer((target as HTMLElement)));
         }
     }
 }
@@ -127,6 +122,22 @@ function handleClick() {
             drawer.drawer.cycle();
         });
     }
+}
+
+/**
+ * Handle loading arguments passed directly, and described on the element.
+ * @param userArguments
+ */
+function loadUserArguments(userArguments: IKnob.Settings) {
+    const allowedSettings = Object.keys(this.settings);
+    const allowedStores = Object.keys(this.store);
+    const collectedArguments = new Map();
+
+    const {dataset} = this.mount;
+    if (dataset.cycle) collectedArguments.set('cycle', dataset.cycle === `true`);
+    if (dataset.accessibility) collectedArguments.set('accessibility', dataset.accessibility === `true`);
+
+    resolveLoadArguments.bind(this)(userArguments, collectedArguments, allowedSettings, allowedStores)
 }
 
 export {Knob, getKnob}

@@ -74,10 +74,20 @@ namespace IDrawer {
         actions: Array<IActions.Observe>;
     }
 
-    export interface Settings {
-        hiddenStates: Array<string>;
+    export interface Settings extends ISettings.Default {
+        inStates: (state: string) => boolean;
         states: Array<string>;
+        initState: string;
+        hiddenStates: Array<string>;
+        hash: string;
         hashState: string;
+        uuid: () => string;
+        defaults: IDrawer.Settings;
+    }
+
+    export interface Store extends IStores.Default {
+        mount: IDrawer.Element;
+        knobs: Map<IKnob.Element, IKnob.API>;
     }
 
     export interface KnobSetup {
@@ -96,6 +106,7 @@ namespace IDrawer {
         settings: IDrawer.Settings;
         state: string;
         cycle: (states?: Array<string>) => void;
+        store: IDrawer.Store;
         hasher: {
             setUrl: () => void;
             clearUrl: () => void;
@@ -105,9 +116,10 @@ namespace IDrawer {
 }
 
 namespace IKnob {
-    export interface Settings {
+    export interface Settings extends ISettings.Default {
         cycle: boolean;
         accessibility: boolean;
+        defaults: IKnob.Settings;
     }
 
     export interface Store extends IStores.Default {
@@ -125,13 +137,18 @@ namespace IKnob {
         actions: Map<string, IActions.Observe>;
         drawers: Map<IDrawer.Element, MutationObserver>;
     }
+
+    export interface Event extends CustomEvent {
+        detail: {
+            drawer: IDrawer.Element,
+        }
+    }
 }
 
 namespace IActions {
+
     export interface Observe {
-        list: Array<MutationRecord>;
-        api: IDrawer.API | IKnob.API;
-        observer: MutationObserver;
+        (list: Array<MutationRecord>, api: IDrawer.API | IKnob.API, observer: MutationObserver): void;
     }
 }
 
@@ -139,6 +156,16 @@ namespace IStores {
     export interface Default {
         repo: Map<string, any>;
         mapGet: Map<string, any>;
+        arrayGet: Array<any>;
+        mount: HTMLElement;
+        actions: Map<string, IActions.Observe>;
+    }
+}
+
+namespace ISettings {
+    export interface Default {
+        repo: Map<string, any>;
+        append: (name: string, row: any) => void;
     }
 }
 
@@ -158,5 +185,7 @@ export {
     KnobSettingsInterface,
     KnobAction,
     IKnob,
-    IDrawer
+    IDrawer,
+    IActions,
+    ISettings,
 }
