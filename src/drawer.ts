@@ -9,7 +9,7 @@ import {DrawerStore} from "./stores";
  * @param el
  * @param userArguments
  */
-function Drawer(el: HTMLElement, userArguments: IDrawer.Settings | object | undefined) {
+function Drawer(el: HTMLElement, userArguments?: IDrawer.Settings | object | undefined) {
     /** ==== Initialize the API ==== */
     this.settings = new DrawerSettings();
     this.store = new DrawerStore();

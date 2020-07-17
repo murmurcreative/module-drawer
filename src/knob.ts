@@ -17,7 +17,7 @@ import {getDrawer} from "./drawer";
  * @param userArguments
  * @constructor
  */
-function Knob(el: HTMLElement, userArguments: IKnob.Settings | object | undefined) {
+function Knob(el: HTMLElement, userArguments?: IKnob.Settings | object | undefined) {
     this.settings = new KnobSettings();
     this.store = new KnobStore();
 

@@ -11,7 +11,7 @@ polyfill();
  * @param selector
  * @param userSettings
  */
-function Cabinet(selector: HTMLElement | string, userSettings: DrawerSettingsInterface) {
+function Cabinet(selector?: HTMLElement | string, userSettings?: DrawerSettingsInterface) {
     const drawers = sel(selector || `[data-module="drawer"]`);
     if (drawers.length < 1) {
         return; // There are no drawers
