@@ -41,6 +41,8 @@ namespace IDrawer {
         state: string;
         cycle: (states?: Array<string>) => void;
         store: IDrawer.Store;
+        actions: Map<string, IActions.Observe>;
+        knobs: Map<IKnob.Element, IKnob.API>;
         hasher: {
             setUrl: () => void;
             clearUrl: () => void;
