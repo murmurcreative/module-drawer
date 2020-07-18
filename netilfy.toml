@@ -1,5 +1,2 @@
 [build]
   base = "docs/"
-  publish = "_site/"
-  command = "bundle exec jekyll build"
-
