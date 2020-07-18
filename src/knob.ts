@@ -11,7 +11,7 @@ import {getDrawer} from "./drawer";
  * ** WARNING **
  * This will not check to see if a Knob already exists on this element; you are
  * advised to check before instantiating a new knob, i.e. with getKnob().
- * Otherwise you will like get undesirable behavior.
+ * Otherwise you will likely get undesirable behavior.
  *
  * @param el
  * @param userArguments
@@ -41,12 +41,12 @@ function Knob(el: HTMLElement, userArguments?: IKnob.Settings | object | undefin
     this.mount = el;
     this.mount.knob = this;
 
-    loadUserArguments.bind(this)(userArguments);
-
     this.actions = handleAriaExpandedState;
 
     this.mount.addEventListener(`knob.drawerAdded`, handleDrawerAddedEvent.bind(this));
     this.mount.addEventListener(`click`, handleClick.bind(this));
+
+    loadUserArguments.bind(this)(userArguments);
 }
 
 /**
