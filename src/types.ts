@@ -1,10 +1,4 @@
 namespace IDrawer {
-    export interface Initialize {
-        settings: IDrawer.Settings;
-        knobs: Array<string | HTMLElement> | IDrawer.KnobSetup;
-        actions: Array<IActions.Observe>;
-    }
-
     export interface Settings extends ISettings.Default {
         inStates: (state: string) => boolean;
         states: Array<string>;
@@ -92,7 +86,6 @@ namespace IKnob {
 }
 
 namespace IActions {
-
     export interface Observe {
         (list: Array<MutationRecord>, api: IDrawer.API | IKnob.API, observer: MutationObserver): void;
     }
@@ -112,12 +105,6 @@ namespace ISettings {
     export interface Default {
         repo: Map<string, any>;
         append: (name: string, row: any) => void;
-    }
-}
-
-namespace IUtil {
-    export interface SelResult {
-
     }
 }
 
