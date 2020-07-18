@@ -57,6 +57,37 @@ Now you have a Drawer!
 
 For more details on functionality, etc, take a look at the link:#config[configuration] and link:#api[API] sections.
 
+[#parts]
+== Parts
+
+[#parts-drawer]
+=== Drawer
+The core of Drawer is, well, the Drawer.
+In an instantiation, the Drawer should be considered the source of truth:
+It's state is what you should trust, and what all other components should refer to for an authoritative answer.
+The module is structured in a way that assumes this relationship and encourages you to go along with it.
+You can chose not to, if you like, but things might get dicey.
+
+A Drawer is an element that has a state attached to it.
+That state can be manipulated.
+When certain states are active, the Drawer might do certain things, or take on certain properties.
+The module is written to be fairly minimal, and doesn't provide a lot of bells and whistles out of the box, but it provides you with the tools to cast your own bells and carve your won whistles.
+
+[#parts-knob]
+=== Knob
+Knobs are optional, but they are useful for 90% of the things a Drawer is likely to be created for.
+
+A Knob is an element that observes one or more Drawers for changes in their state, and has the capacity to react to those changes.
+Out of the box, a Knob also has the capacity to respond to click events by cycling the states on its attached Drawer(s).
+
+[WARNING]
+====
+Knobs can have many Drawers, and Drawers can have many Knobs.
+In most cases, they won't;
+your nav menu probably only needs one toggle button, after all.
+Still, Drawer is built to assume that there can always be more than one Drawer or Knob, which means you should be circumspect when describing your element selectors.
+====
+
 [#config]
 == Configuration
 
@@ -178,42 +209,28 @@ Generally you should not turn it off, but for some use cases (i.e. non-interacti
 An array of callbacks, called when a Drawer this Knob is attached to changes state.
 See link:#actions[`actions`] for details.
 
-[#instantiation]
-== Instantiation
-
-- `new Drawer(element, settings)` - The `element` argument is *required* and _must_ be a reference to a DOM element, i.e. the result of `document.querySelector()`.
-Use this if you want to instantiate only a single, specific Drawer (i.e. a site navigation menu).
-+
-This returns an API object (see below) for the Drawer.
-- `new Cabinet(selector, settings)` - The `selector` must be either a valid selector (i.e. something `document.querySelectorAll()` understands) or a reference to a DOM element.
-If no `selector` is specified (or if `selector` is `undefined`)
-`Cabinet` will use the default selector, which is `[data-module="drawer"]`.
-+
-Use this if you want to instantiate a bunch of Drawers at once with the same settings (i.e. an accordion).
-+
-This returns an array of API objects (see below).
-+
-[NOTE]
-====
-Passing `undefined` to the first parameter of `Cabinet` will allow you to specify a settings object while still using the default selector.
-====
-
-[IMPORTANT]
-====
-`new Drawer()` will always return a `Drawer` object, but if if it's passed a non-element at instantiation it can't create an actual drawer.
-To reflect this, all Drawer API objects have a simple `real` property which will be `true` when they've been passed a valid element, and `false` when they haven't.
-====
-
 [#api]
 == API
 
-Drawers and Knobs have an API object attached to their elements in the dom.
+Drawers and Knobs have an API object attached to their elements in the DOM.
 For Drawers, this is a `.drawer`;
 for Knobs, `.knob`.
 You can also get the API for either by calling `getDrawer(element)` or `getKnob(element)`.
 
 [#api-drawer]
 === Drawer
+
+To create a Drawer, do one of the following:
+
+- `new Drawer(HTMLElement, userArguments)`
+- `new Cabinet(SelectorArgument, userArguments)`
+
+`new Drawer` will return an API object
+(described below)
+while `new Cabinet` will return an array of API objects.
+`new Cabinet` will create Drawers on whatever objects match its `SelectorArgument`, but if the first parameter is undefined
+(or an invalid selector)
+it will use the default selector: `data-module="drawer"`.
 
 [horizontal]
 `state`:: _<string>_
@@ -283,85 +300,59 @@ Nearly everything in the store is proxied through the common API endpoints, so y
 [#api-knob]
 === Knob
 
+To create a Knob, do one of the following:
 
-Each Drawer has an API object that contains settings information as well as several methods for interacting with that Drawer.
+- Assign a `SelectorArgument` to the `knobs` property of a Drawer.
+- Add a `data-knob="selector"` attribute to a Drawer.
+- `new Knob(HTMLElement, userArguments)`
 
-These API objects are returned by link:#instantiation[`new Drawer()` and `new Cabinet()`], and can also be found attached to the Drawer element, under the `drawer` property.
+`new Knob` will return an API object
+(described below)
+and you can retrieve the API object for a Knob from the `knobs` on a Drawer if you have its element:
+
+[source,javascript]
+----
+const knobAPI = drawerAPI.knobs.get(knobElement);
+----
+
+[WARNING]
+====
+Unless you pass a drawer property in `userArguments` a Knob created with `new Knob` will not be attached to any drawer.
+====
 
 [horizontal]
-`settings`:: Contains information describing Drawer behavior.
-See link:#config[Config] for full settings documentation.
-`getState()`:: Returns the current state of the Drawer.
-`setState(state)`:: Sets the state of the Drawer.
-`setHidden(hide)`:: Sets the `hidden` attribute of the Drawer element.
-`addKnob(knob)`:: Adds a link:#knobs[Knob].
-`cycle(states)`:: Advances the Drawer through states.
-If the `states` argument is undefined/not passed, then it will move to the next state defined in settings.
-If the `states` argument is an array of valid states (that is, states that also appear in the settings) then it will move to the next valid state in that array.
-See the link:src/drawer.ts[function definition] for more information.
-`addAction(action)`:: Add a callback that will be called when the Drawer detects a state change.
-The callback recieves the following arguments:
-** `list` - An array of mutations detected.
-** `el` - The DOM element of the Drawer.
-** `observer` - The observer that is watching this drawer.
-
-[#knobs]
-== Knobs
-
-Knobs are elements that become attached to a Drawer:
-More specifically, they observe the Drawer with MutationObserver in the same way it observes itself, and fire their own actions when they detect mutations.
-By default, when clicked Knobs will cycle a Drawer through its states.
-
-Your Drawers aren't required to have Knobs, but they are a quick and easy way to implement the functionality 80% of Drawers are deployed for.
-
-You can attach a Knob to a Drawer in one of three ways:
-
-. Provide an element or selector in the settings at instantiation:
+`drawers`:: _<Map<HTMLElement, MutationObserver>>_
 +
-[source,javascript]
-----
-new Drawer('.drawer', {knobs: ['.knob']})
-----
-
-. Use `addKnob` to add a Knob to an already instantiated Drawer:
+This contains all the Drawers to which this knob is attached.
+Assigning a Drawer to this property will add it to the list, and assigning an array of Drawers will add them all.
+Adding a Drawer will cause the Knob to begin observing it, and interacting with the Drawer as its settings dictate.
+`actions`:: _<Map<string, Function>>_
 +
-[source,javascript]
-----
-(new Drawer('.drawer')).addKnob('.knob');
-
-// or
-
-const {addKnob} = document.querySelector('drawer').drawer;
-addKnob('.knob');
-----
-
-. Provide a selector in the `data-knob` attribute:
+Callbacks called by the MutationObserver.
+See link:#actions[actions] for how those callbacks are constructed.
+To add one, assign it: `api.actions = someAction`.
+This will _append_ the new action, unless it has the same name as an already-stored action, in which case it will replace the old one.
+`mount`:: _<HTMLElement>_
 +
-[source,html]
-----
-<div class="drawer" data-knob=".knob"> ... </div>
-----
+The element that this API is attached to.
+It is here to allow you access to the element from actions, etc.
+You _cannot_ modify its value after the Knob has been created.
 
-[IMPORTANT]
-====
-A Drawer can have multiple Knobs, and methods 1 and 3 above can result in attaching multiple Knobs if the provided selectors match more than on element in the DOM.
-====
+The above are the API endpoints you should be using;
+they are chosen to give you necessary access to the things required, take steps validate your input, and are extremely unlikely to change outside of a major version bump.
+If you need some deeper access the following properties are also exposed, but keep in mind that their shape is not as guaranteed, and they have fewer checks in place to help you not break things.
 
-The following is a simple, complete example that will result in a drawer that can be opened and closed by clicking on the button:
+[horizontal]
+`settings`:: Contains internal settings for the Knob.
+Settings are things that (generally) aren't going to change after instantiation and describe
+behavior, like `cycle` or `accessibility`.
+While they do some validation on input, changing them generally has no side effects.
+`store`:: Contains internal values and references for the Knob.
+Things in the store are more dynamic and likely to change, and are also often complex objects that the Knob acts upon, or asks to act for it.
+Modifying items in the store will often have side effects;
+i.e. adding an item to `drawers` will cause the Knob to being observing the Drawer.
+Nearly everything in the store is proxied through the common API endpoints, so you should use those instead of accessing the store directly.
 
-[source,javascript]
-----
-import {Drawer} from "murmur-drawer";
-
-new Drawer(document.querySelector('.drawer'));
-----
-
-[source,html]
-----
-<div class="drawer"
-    data-knob="button[data-controls='drawer']"> 🧦🧦🧦🧦🧦🧦🧦🧦 </div>
-<button data-controls="drawer"> Toggle </button>
-----
 
 [#actions]
 == Actions
@@ -436,6 +427,26 @@ drawerAPI.settings = drawerAPI.settings.filter(action => action.name !== 'doSome
 
 If a callback you pass doesn't have a name that Drawer can determine, it will be given a randomly-generated name by `uuid()`.
 
+== Examples
+
+=== Simple
+
+The following is a simple, complete example that will result in a drawer that can be opened and closed by clicking on the button:
+
+[source,javascript]
+----
+import {Drawer} from "murmur-drawer";
+
+new Drawer(document.querySelector('.drawer'));
+----
+
+[source,html]
+----
+<div class="drawer"
+    data-knob="button[data-controls='drawer']"> 🧦🧦🧦🧦🧦🧦🧦🧦 </div>
+<button data-controls="drawer"> Toggle </button>
+----
+
 == Further Reading
 
 Drawer is several dozen lines of code that manage, essentially, one thing:
@@ -452,15 +463,29 @@ You are of course encouraged to use Drawer's simple API to interact with its sta
 
 [source,javascript]
 ----
-const el = document.querySelector(`.drawer`);
+const el = document.querySelector('.drawer');
 
 // Drawer API
 const {setState} = el.drawer;
-setState(`closed`);
+setState('closed');
 
 // Direct access
-drawer.dataset.state = `closed`;
+drawer.dataset.state = 'closed';
 ----
+
+The API is largely built on the following ideas:
+
+- Relevant data should be easily accessible
+- Changing that data should cause the rest of the state and element to react
+- Behavior should be as consistent as possible across interfaces
+
+As a result, most functionality is accessed by assigning data to properties, which then use getters and setters to
+
+a. Validate inputs
+b. Store data in internal Maps
+c. Fire off side effects that accomplish the actual functionality
+
+This makes the API easy to use, easy to discover, and hopefully fun.
 
 == Goals
 
@@ -476,88 +501,3 @@ Whatever the case, you should be able to trust that this module will work, easil
 
 Instead of getting fancy with things like web components, this keeps it simple:
 No frameworks or dependencies, just good old link:http://vanilla-js.com/[Vanilla JS].
-
-= Notes
-
-Both of the following often use this pattern:
-
-[source,javascript]
-----
-function Store() {
-    this.repo = new Map();
-
-    Object.defineProperties(this, {
-        property: {
-            get: () => new Map(this.repo.get('property') || []),
-            set: () => // setter logic
-        }
-    })
-}
-----
-
-The purpose of this approach is to prevent users from accidentally setting values when retrieving from a property:
-If it return the actual object stored there, that would be a reference, allowing the original to be changed.
-Documentation should also make it clear that setting must be done through the setter.
-
-== Settings
-
-- Static
-- Set at instantiation, but can be modified afterward
-- In general, things that use settings should check the setting every time they take an action that could be affected by the setting; not once at object creation
-- Getters return defaults if not value set (this is how defaults are stored)
-
-== Store
-
-- Dynamic
-- Tracks things that can and will change (i.e. Drawers, Knobs, etc)
-- Setters can (and often do) have side effects, i.e. 'set'ing a drawer on a knob triggers the creation of an observer
-
-== Storing Knobs & Drawers, Where?
-
-=== Knobs want to knox their drawers
-
-Knobs have to know what drawer to observer, at least on instantiation.
-It seems useful to be able to easily get the drawers we're attached to, as well as the observers for those drawers.
-
-=== Drawers want to know their knobs
-
-Since the Drawer is the entry point for this whole thing, there needs to be at least some awareness of attached knobs at instantiation so that the drawer can instruct those knobs to attach.
-After instantiation it seems less useful to know this, since the drawer does not need to actively communicate w/ knobs--they observe it.
-Still, it's not hard to to think that at some point you might want to query a drawer to see who is watching it, and since that information is not exposed via a queryable parameter, you would need to either do a very expensive examination of every element in the DOM, or you would need to have something on the drawer that tracks attached knobs.
-
-=== Drawer Startup Process
-
-. `new Drawer({ knobs: ['button'] })` says to create a drawer, and add `button` element(s) as knob(s)
-. Find all elements that match `button` and iterate over them
-. For each matched element, get the API, either by creating a new Knob, or retrieving the existing Knob API
-. Tell the API to attach this drawer (i.e. `KnobAPI.drawers = thisDrawer`)
-. Store in map, with knob element as key, api as value
-
-=== Knob Startup Process
-
-. `new Knob({ drawers: ['div'] })` says to create a knob, and add the `div` element(s) as drawer(s).
-. Find all elements that match `div` and iterate over them
-. For each matched element, get the API. If there is no API, skip that drawer and remove it from the list (i.e. we only want pre-existing drawers) .Tell the API to attach this knob
-
-
-The issue here is that the way I've set it up w/ getters and setters, we get into a recursive circle when a knob tries to add itself to a drawer as a result of a setter call.
-In other words we want `KnobAPI.drawers = thisDrawer` to do two different things.
-
-The idea of using getters/setters for functionality is to help isolate functionality, settings, etc, to individual elements, and not rely on other elements for help.
-So what is `KnobAPI.drawers = drawer` saying?
-"We want to watch this drawer" What is `DrawerAPI.knobs = knob` saying?
-"We want this knob to watch us" Watching a drawer should be functionality left entirely up to the Knob.
-I think in that case, `DrawerAPI.knobs.set` _shouldn't put anything in the drawer store_.
-Instead, it should simply dispatch a call to the relevant knobs to attach themselves, and they'll store themselves in the drawer store by accessing the repo directly--_not_ by using the setter!
-
-=== Setup Settings
-
-There are a couple of different things happening here:
-
-. Telling a drawer what element to mount on
-. Giving the drawer a list of knobs that need to be attached
-. Telling the drawer its initial state
-. Telling the drawer its initial hash (if present)
-
-I think i want to handle this by having a "load" step during instantiation where all of these things are handled.
-Each will be handled individually; there aren't enough things to make that onerous, and I don't want to engage in overzealous/overeager "optimization".
