@@ -1,3 +1,3 @@
 [build]
-  publish = "/docs/_site"
+  publish = "_site"
   command = "jekyll build"
