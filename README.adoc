@@ -22,11 +22,15 @@ ifndef::env-github[]
 :warning-caption: ⚠
 endif::[]
 
-= Drawer
+= 🗄️ Drawer
 
 *Broadly:* Open things and close them as well.
 
 *Technically:* Swap states on a particular element.
+
+Drawer was originally created to handle opening and closing website navigation menus.
+It still does this very well!
+But you can use it to do other things too.
 
 toc::[]
 
@@ -63,15 +67,15 @@ For more details on functionality, etc, take a look at the link:#config[configur
 [#parts-drawer]
 === Drawer
 The core of Drawer is, well, the Drawer.
-In an instantiation, the Drawer should be considered the source of truth:
-It's state is what you should trust, and what all other components should refer to for an authoritative answer.
+In an instance, the Drawer should be considered the source of truth:
+Its state is what you should trust, and what all other components should refer to for an authoritative answer.
 The module is structured in a way that assumes this relationship and encourages you to go along with it.
 You can chose not to, if you like, but things might get dicey.
 
-A Drawer is an element that has a state attached to it.
+A Drawer is an element in the DOM that has a state attached to it.
 That state can be manipulated.
 When certain states are active, the Drawer might do certain things, or take on certain properties.
-The module is written to be fairly minimal, and doesn't provide a lot of bells and whistles out of the box, but it provides you with the tools to cast your own bells and carve your won whistles.
+The module is written to be fairly minimal, and doesn't provide a lot of bells and whistles out of the box, but it gives you the tools to cast your own bells and carve your won whistles.
 
 [#parts-knob]
 === Knob
