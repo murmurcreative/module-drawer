@@ -1,8 +1,8 @@
 import {resolveLoadArguments, uuid} from "./util";
-import {DrawerSettings} from "./settings";
+import {DrawerSettings, KnobSettings} from "./settings";
 import {IActions, IDrawer, IKnob} from "./types";
 import {clearHash, extractHash, ifValidHash, isValidHash, setHash, wipeHash} from "./hash";
-import {DrawerStore} from "./stores";
+import {DrawerStore, KnobStore} from "./stores";
 
 /**
  * Activate a drawer.
@@ -10,11 +10,15 @@ import {DrawerStore} from "./stores";
  * @param userArguments
  */
 function Drawer(el: HTMLElement, userArguments?: IDrawer.Settings | object | undefined) {
-    /** ==== Initialize the API ==== */
-    this.settings = new DrawerSettings();
-    this.store = new DrawerStore();
-
     Object.defineProperties(this, {
+        settings: {
+            value: new DrawerSettings(),
+            writable:true,
+        },
+        store: {
+            value: new DrawerStore(),
+            writable: true,
+        },
         mount: {
             get: () => this.store.mount,
             set: (mount: IDrawer.Element) => this.store.mount = mount,
@@ -43,17 +47,31 @@ function Drawer(el: HTMLElement, userArguments?: IDrawer.Settings | object | und
             get: (): Map<IKnob.Element, IKnob.API> => this.store.knobs,
             set: (knob: string | HTMLElement | Array<HTMLElement | string>) => this.store.knobs = knob
         },
+        hasher: {
+            value: {
+                setUrl: () => ifValidHash(this.settings.hash, setHash),
+                clearUrl: () => ifValidHash(this.settings.hash, clearHash),
+                wipeUrl: wipeHash
+            },
+        },
+        cycle: {
+            value: (states: Array<string>) => cycle(this.mount, states),
+        },
+        detachKnob: {
+            value: (knob: IKnob.Element) => {
+                if (this.knobs.has(knob)) {
+                    const event = new CustomEvent('drawer.knobRemoved', {
+                        detail: {
+                            drawer: this.mount,
+                            knob: knob,
+                        },
+                    });
+                    this.mount.dispatchEvent(event);
+                    knob.dispatchEvent(event);
+                }
+            }
+        }
     });
-
-    // Functions for hash handling
-    this.hasher = {
-        setUrl: () => ifValidHash(this.settings.hash, setHash),
-        clearUrl: () => ifValidHash(this.settings.hash, clearHash),
-        wipeUrl: wipeHash
-    };
-
-    // Add function for moving through states
-    this.cycle = (states: Array<string>) => cycle(this.mount, states);
 
     /** ==== Set up actions ==== */
     // Couple state to hidden attribute
@@ -71,8 +89,8 @@ function Drawer(el: HTMLElement, userArguments?: IDrawer.Settings | object | und
         this.mount.id = this.settings.uuid ? this.settings.uuid() : uuid();
     }
 
-    /** ==== Load settings and stores ==== */
-    loadUserArguments.bind(this)(userArguments);
+    this.mount.addEventListener(`knob.drawerRemoved`, handleRemovalEvent.bind(this));
+    this.mount.addEventListener(`drawer.knobRemoved`, handleRemovalEvent.bind(this));
 
     const watcher = new MutationObserver((list: Array<MutationRecord>, observer: MutationObserver) => handleMutation.bind(this)(list, observer));
     this.observer = watcher.observe(this.mount, {
@@ -82,6 +100,8 @@ function Drawer(el: HTMLElement, userArguments?: IDrawer.Settings | object | und
         childList: false,
         subtree: false,
     });
+
+    loadUserArguments.bind(this)(userArguments);
 
     // If there's a matching hash, set the hashState as the initState
     if (extractHash().length > 0) {
@@ -108,8 +128,31 @@ function getDrawer(el: HTMLElement | IDrawer.Element): IDrawer.API | undefined {
     }
 }
 
+/**
+ * Run actions when the element mutates.
+ *
+ * @param list
+ * @param observer
+ */
 function handleMutation(list: Array<MutationRecord>, observer: MutationObserver) {
     this.actions.forEach((action: IActions.Observe) => action(list, this, observer));
+}
+
+/**
+ * Handle removes of Knobs and Drawers from either type of element.
+ * @param event
+ */
+function handleRemovalEvent(event: IDrawer.Event) {
+    const {detail: {knob}, type} = event;
+    switch (type) {
+        case 'knob.drawerRemoved':
+        case 'drawer.knobRemoved':
+            if (this.knobs.get(knob)) {
+                // Remove knob
+                this.store.repo.get('knobs').delete(knob);
+            }
+            break;
+    }
 }
 
 /**

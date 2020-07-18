@@ -18,11 +18,15 @@ import {getDrawer} from "./drawer";
  * @constructor
  */
 function Knob(el: HTMLElement, userArguments?: IKnob.Settings | object | undefined) {
-    this.settings = new KnobSettings();
-    this.store = new KnobStore();
-
-    // Proxy things in settings and stores to the Knob itself
     Object.defineProperties(this, {
+        settings: {
+            value: new KnobSettings(),
+            writable:true,
+        },
+        store: {
+            value: new KnobStore(),
+            writable: true,
+        },
         mount: {
             get: (): IKnob.Element => this.store.mount,
             set: (element) => this.store.mount = element,
@@ -32,9 +36,21 @@ function Knob(el: HTMLElement, userArguments?: IKnob.Settings | object | undefin
             set: (action: IActions.Observe) => this.store.actions = action
         },
         drawers: {
-            get: () => this.store.drawers,
+            get: (): Map<IDrawer.Element, MutationObserver> => this.store.drawers,
             set: (drawers: string | HTMLElement | Array<HTMLElement | string>) => this.store.drawers = drawers,
         },
+        detachDrawer: {
+            value: (drawer: IDrawer.Element) => {
+                const event = new CustomEvent('knob.drawerRemoved', {
+                    detail: {
+                        drawer: drawer,
+                        knob: this.mount,
+                    },
+                });
+                this.mount.dispatchEvent(event);
+                drawer.dispatchEvent(event);
+            },
+        }
     });
 
     // Attach API
@@ -44,6 +60,8 @@ function Knob(el: HTMLElement, userArguments?: IKnob.Settings | object | undefin
     this.actions = handleAriaExpandedState;
 
     this.mount.addEventListener(`knob.drawerAdded`, handleDrawerAddedEvent.bind(this));
+    this.mount.addEventListener(`knob.drawerRemoved`, handleRemovalEvent.bind(this));
+    this.mount.addEventListener(`drawer.knobRemoved`, handleRemovalEvent.bind(this));
     this.mount.addEventListener(`click`, handleClick.bind(this));
 
     loadUserArguments.bind(this)(userArguments);
@@ -65,10 +83,30 @@ function getKnob(el: HTMLElement | IKnob.Element): IKnob.API | undefined {
  * @param event
  */
 function handleDrawerAddedEvent(event: IKnob.Event) {
-    const {drawer} = event.detail.drawer;
+    const {drawer: api} = event.detail.drawer;
 
-    setAriaExpanded(this, drawer);
-    setAriaControls(this, drawer);
+    setAriaExpanded(this, api);
+    setAriaControls(this, api);
+}
+
+/**
+ * Actions to be executed when a drawer is removed from this Knob.
+ * @param event
+ */
+function handleRemovalEvent(event: IKnob.Event) {
+    const {detail: {drawer}, type} = event;
+    switch (type) {
+        case 'knob.drawerRemoved':
+        case 'drawer.knobRemoved':
+            if (this.drawers.has(drawer)) {
+                // Turn off observation
+                this.drawers.get(drawer).disconnect();
+
+                // Remove Drawer
+                this.store.repo.get('drawers').delete(drawer);
+            }
+            break;
+    }
 }
 
 /**
@@ -119,7 +157,7 @@ function handleClick() {
     const {settings: {cycle}, drawers} = this;
     if (cycle) {
         drawers.forEach((observer: MutationObserver, drawer: IDrawer.Element) => {
-            drawer.drawer.cycle();
+            getDrawer(drawer)?.cycle();
         });
     }
 }

@@ -34,6 +34,13 @@ namespace IDrawer {
         drawer: IDrawer.API;
     }
 
+    export interface Event extends CustomEvent {
+        detail: {
+            knob: IKnob.Element,
+            drawer?: IDrawer.Element,
+        }
+    }
+
     export interface API {
         mount: IDrawer.Element;
         hidden: boolean;
@@ -43,6 +50,7 @@ namespace IDrawer {
         store: IDrawer.Store;
         actions: Map<string, IActions.Observe>;
         knobs: Map<IKnob.Element, IKnob.API>;
+        detachKnob: (knob: IKnob.Element) => void;
         hasher: {
             setUrl: () => void;
             clearUrl: () => void;
@@ -72,11 +80,13 @@ namespace IKnob {
         mount: IKnob.Element;
         actions: Map<string, IActions.Observe>;
         drawers: Map<IDrawer.Element, MutationObserver>;
+        detachDrawer: (drawer: IDrawer.Element) => void;
     }
 
     export interface Event extends CustomEvent {
         detail: {
             drawer: IDrawer.Element,
+            knob?: IKnob.Element,
         }
     }
 }
