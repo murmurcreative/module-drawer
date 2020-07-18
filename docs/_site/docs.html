@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Docs | Drawer, a simple state manager</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="Docs" />
+<meta name="author" content="Ben Martinez-Bateman" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Open things and close them as well. Manage state, in a simple way." />
+<meta property="og:description" content="Open things and close them as well. Manage state, in a simple way." />
+<link rel="canonical" href="/docs.html" />
+<meta property="og:url" content="/docs.html" />
+<meta property="og:site_name" content="Drawer, a simple state manager" />
+<script type="application/ld+json">
+{"description":"Open things and close them as well. Manage state, in a simple way.","@type":"WebPage","headline":"Docs","url":"/docs.html","author":{"@type":"Person","name":"Ben Martinez-Bateman"},"@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="Drawer, a simple state manager" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Drawer, a simple state manager</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/docs.html">Docs</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">Docs</h1>
+  </header>
+
+  <div class="post-content">
+    <div class="paragraph">
+<p>This webcomponent follows the <a href="https://github.com/open-wc/open-wc">open-wc</a> recommendation.</p>
+</div>
+<div id="toc" class="toc">
+<div id="toctitle" class="title"></div>
+<ul class="sectlevel1">
+<li><a href="#installation">Installation</a></li>
+<li><a href="#usage">Usage</a>
+<ul class="sectlevel2">
+<li><a href="#icon-slot"><code>icon</code> Slot</a></li>
+</ul>
+</li>
+<li><a href="#polyfills">Polyfills</a></li>
+<li><a href="#content">Content</a>
+<ul class="sectlevel2">
+<li><a href="#heading">heading</a></li>
+<li><a href="#content-2">content</a></li>
+</ul>
+</li>
+<li><a href="#api">API</a>
+<ul class="sectlevel2">
+<li><a href="#attributes">Attributes</a>
+<ul class="sectlevel3">
+<li><a href="#open">open</a></li>
+<li><a href="#headless">headless</a></li>
+<li><a href="#name">name</a></li>
+<li><a href="#hash">hash</a></li>
+<li><a href="#controller">controller</a></li>
+</ul>
+</li>
+<li><a href="#css">CSS</a>
+<ul class="sectlevel3">
+<li><a href="#hidden">Hidden</a></li>
+</ul>
+</li>
+<li><a href="#methods">Methods</a>
+<ul class="sectlevel3">
+<li><a href="#toggle">toggle()</a></li>
+</ul>
+</li>
+<li><a href="#events">Events</a></li>
+</ul>
+</li>
+<li><a href="#development">Development</a>
+<ul class="sectlevel2">
+<li><a href="#testing-using-karma">Testing using karma</a></li>
+<li><a href="#testing-using-karma-via-browserstack">Testing using karma via browserstack</a></li>
+<li><a href="#linting">Linting</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="sect1">
+<h2 id="installation">Installation</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">npm i @murmurcreative/drawer</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="usage">Usage</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-html" data-lang="html">&lt;script type="module"&gt;
+  import 'murmur-drawer/murmur-drawer.js';
+&lt;/script&gt;
+
+&lt;murmur-drawer&gt;
+  &lt;h2 id="the-drawer"&gt;The Drawer&lt;/h2&gt;
+  &lt;p&gt;Some content.&lt;/p&gt;
+  &lt;p&gt;Lorem ipsum dolor sit amet consectetur adipisicing elit. Tenetur quaerat sint consequuntur. Omnis, totam enim, non reiciendis fugiat quos provident, quisquam eveniet incidunt libero ipsa necessitatibus corrupti dolor fuga accusamus.&lt;/p&gt;
+&lt;/murmur-drawer&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This is a very simple module, but it can be used for things like item selection, simple reveals, etc.
+It can also be composed together with other drawers to make menus, accordions, etc.</p>
+</div>
+<div class="paragraph">
+<p>The drawer needs to be able to determine a (relatively) unique id for itself, in order for it to be able to do certain things.
+There are several ways you can set this ID:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>An <code>id</code> attribute on the heading inside the drawer</p>
+</li>
+<li>
+<p>An <code>id</code> attribute on the drawer element itself (this overrides #1)</p>
+</li>
+<li>
+<p>A <code>name</code> attribute on the drawer element itself (this overrides #1 and #2)</p>
+</li>
+</ol>
+</div>
+<div class="sect2">
+<h3 id="icon-slot"><code>icon</code> Slot</h3>
+<div class="paragraph">
+<p>By default the module uses a big "plus" sign to indicate whether the module is open or closed.
+If you would like to customize this, you can do so with the <code>icon</code> slot:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-html" data-lang="html">&lt;style&gt;
+  .closed, .opened {
+    display: none;
+  }
+  [data-open="false"] .closed {
+    display: block;
+  }
+  [data-open="true"] .opened {
+    display: block;
+  }
+&lt;/style&gt;
+&lt;murmur-drawer&gt;
+  &lt;h2 id="the-drawer"&gt;The Drawer&lt;/h2&gt;
+  &lt;p&gt;Some content.&lt;/p&gt;
+  &lt;p&gt;Lorem ipsum dolor sit amet consectetur adipisicing elit. Tenetur quaerat sint consequuntur. Omnis, totam enim.&lt;/p&gt;
+  &lt;div slot="icon"&gt;
+    &lt;span class="opened"&gt;👆&lt;/span&gt;
+    &lt;span class="closed"&gt;👇&lt;/span&gt;
+  &lt;/div&gt;
+&lt;/murmur-drawer&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The slot element will be given a <code>data-open</code> attribute that is <code>false</code> when the drawer is closed and <code>true</code> when open.
+Since this is applied to an element in the "light" DOM, you can use a normal stylesheet to control the appearance of elements inside the slot.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="polyfills">Polyfills</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The base module includes no polyfills or transpiling; it&#8217;s just nice clean ES6 that should work in modern browsers.
+Until support for all the required technologies is more universal, we&#8217;ll probably want to include the following <em>before</em> including the element javascript.
+All you need to do is add this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-html" data-lang="html">&lt;script
+    src="https://unpkg.com/@webcomponents/webcomponentsjs@2.3.0/webcomponents-loader.js"&gt;
+&lt;/script&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This will load any necessary for base functionality.
+Modules extended from this one may require their own polyfills.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="content">Content</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="heading">heading</h3>
+<div class="paragraph">
+<p>This represents the name of the section this drawer contains.
+A heading must following a few rules:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>It must be an <code>h</code> element (i.e. <code>h1</code>, <code>h3</code>, etc)</p>
+</li>
+<li>
+<p>It must be the first element inside the <code>&lt;murmur-drawer&gt;</code></p>
+</li>
+</ol>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<div class="title">⚠</div>
+</td>
+<td class="content">
+While the heading is optional, if no heading is included then the drawer will load closed (i.e. invisible).
+Only forgo a heading if you have a plan to open the drawer in some other way (see the <code>toggle()</code> method or <code>open</code> attribute).
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="content-2">content</h3>
+<div class="paragraph">
+<p>This is the content the drawer reveals, and is more or less required; Although the drawer will load if no content is defined, there isn&#8217;t much point.
+Any content inside the drawer that is not a heading (as defined above) will be considered content.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-html" data-lang="html">&lt;murmur-drawer&gt;
+    &lt;p&gt;Lorem ipsum dolor sit amet consectetur adipisicing elit.&lt;/p&gt;
+&lt;/murmur-drawer&gt;</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="api">API</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="attributes">Attributes</h3>
+<div class="sect3">
+<h4 id="open">open</h4>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Default</dt>
+<dd>
+<p><code>false</code></p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>This represents whether the drawer is open (the attribute is present) or closed (the attribute is not present).
+Generally it is set dynamically by the drawer itself based on user interaction, but you can set it manually.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="headless">headless</h4>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Default</dt>
+<dd>
+<p><code>false</code></p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>This attribute is set if the drawer has no heading.
+It will be set automatically if the drawer contains no valid heading element, but you can set it manually if, say, you have a <code>h</code> element as your first element but don&#8217;t want it used as the heading.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="name">name</h4>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Default</dt>
+<dd>
+<p><code>null</code></p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>The drawer will use an id on its heading to do some things, most notably to set a URL that automatically opens the drawer when visited.
+If you want to use that functionality but won&#8217;t be using a heading, then you can set this attribute to whatever you would like to use as an id.</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<div class="title">💡</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>If you want to set this via javascript, it is part of the <code>heading</code> object:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-javascript" data-lang="javascript">document.querySelector(`murmur-drawer`).heading.id = `your-id`</code></pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="hash">hash</h4>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Default</dt>
+<dd>
+<p><code>false</code></p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>If this is enabled, the drawer will set a URL hash when opened, and when visiting that URL it will automatically open the drawer.
+Since one of the main use cases for the drawer is for main site navigation, which should never 'start open', this attribute defaults to false.
+As a boolean attribute, its presence on the element is enough to activate the feature.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="controller">controller</h4>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Default</dt>
+<dd>
+<p><code>null</code></p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>This attribute allows you to quickly and easily define an element (or elements) that will control the state of this drawer.
+Set the value of the attribute to a CSS selector that matches the elements you want to use to control this drawer.
+If you have multiple drawers, make sure that their controllers are distinct:
+Otherwise you may get some very strange behavior.</p>
+</div>
+<div class="paragraph">
+<p>Controllers will get a <code>aria-expanded</code> attribute to reflect the state of their drawer:
+<code>aria-expanded="true"</code> when open, <code>aria-expanded="false"</code> when closed.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-html" data-lang="html">&lt;button id="specific-button" aria-expanded="false"&gt;Click to Open&lt;/button&gt;
+&lt;murmur-drawer controller="button#specific-button"&gt;
+    ...
+&lt;/murmur-drawer&gt;</code></pre>
+</div>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<div class="title">💡</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>It is recommended that you set <code>aria-expanded="false"</code> on your controller manually, so that it has the correct value before instantiation of the module.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<div class="title">❗</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>While you can technically use any element as a controller, you should keep two things in mind:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>The module will watch for <code>click</code> events on controllers, so use elements that can spawn that event.</p>
+</li>
+<li>
+<p>For semantic and interaction reasons, it is <em>strongly</em> recommended that you use <code>button</code> elements for your controllers</p>
+</li>
+</ol>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="css">CSS</h3>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<div class="title">⚠</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<div class="title">TODO</div>
+<p>Document the rest of the CSS properties.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="sect3">
+<h4 id="hidden">Hidden</h4>
+<div class="paragraph">
+<p>In some cases it may be useful to redefine what <code>hidden</code> means
+(i.e. if you want to do something more complex that simply hide/show content).</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>--mod-hidden-display</code> (<code>none</code>)<br>
+This sets the <code>display</code> property for <code>[hidden]</code> within the drawer.
+An example usage might be to set this to <code>block</code>, and then change the <code>opacity</code> of the parent <code>murmur-drawer</code> based on the presence of the <code>open</code> attribute there.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="methods">Methods</h3>
+<div class="sect3">
+<h4 id="toggle">toggle()</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-javascript" data-lang="javascript">document.querySelector(`murmur-drawer`).toggle();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Calling this method will swap the <code>open</code> state of the drawer: If it was open, it will close it, and visa-versa.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="events">Events</h3>
+<div class="paragraph">
+<p>Each drawer will emit several events when different things happen to it.
+These events are used internally to drive the state of the module, but you can also hook into them and implement a lot of additional functionality.</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>drawer-opened</code></dt>
+<dd>
+<p>This fires when the drawer has opened.
+When this event fires, the drawer is already open.</p>
+</dd>
+<dt class="hdlist1"><code>drawer-closed</code></dt>
+<dd>
+<p>This fires when the drawer has closed.
+When this event fires, the drawer is already closed.</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="development">Development</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="testing-using-karma">Testing using karma</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">npm run test</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="testing-using-karma-via-browserstack">Testing using karma via browserstack</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">npm run test:bs</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="linting">Linting</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">npm run lint</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+  </div>
+
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Drawer, a simple state manager</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Drawer, a simple state manager</li><li><a class="u-email" href="mailto:ben@murmurcreative.com">ben@murmurcreative.com</a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/alwaysblank"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">alwaysblank</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Open things and close them as well. Manage state, in a simple way.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
