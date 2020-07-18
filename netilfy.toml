@@ -1,2 +1,3 @@
 [build]
-  base = "docs"
+  base = "docs/"
+  publish = "_site/"
