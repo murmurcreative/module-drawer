@@ -1,0 +1,23 @@
+---
+permalink: /
+---
+:Date: 07/18/2020
+:Author: Ben Martinez-Bateman
+:Email: ben@murmurcreative.com
+:Version: 1.2.0
+:toc: macro
+:toclevels: 3
+:toc-title:
+:sectanchors:
+:sectlinks:
+:tip-caption: 💡
+:note-caption: ℹ
+:important-caption: ❗
+:caution-caption: 🔥
+:warning-caption: ⚠
+
+= 🗄️ Drawer
+:showtitle:
+
+This is a very simple module, but it can be used for things like item selection, simple reveals, etc.
+It can also be composed together with other drawers to make menus, accordions, etc.
