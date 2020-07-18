@@ -267,6 +267,10 @@ List of Knobs attached to this Drawer.
 To add a new knob, assign it: `api.knobs = document.querySelector('.knob'))`.
 This will _append_ new Knobs, but if you attempt to add the same `HTMLElement` it will overwrite the old one.
 You can also assign arrays of Knobs, which will behave in the same way.
+`detachKnob(knob: HTMLElement)`:: _<Function>_
++
+Pass the element for a Knob to this function to detach it from this Drawer.
+The Knob will stop observer and reacting to the Drawer, and will no longer toggle it when clicked.
 `hash`:: _<string>_
 +
 The string used for the URL hash feature.
@@ -326,6 +330,10 @@ Unless you pass a drawer property in `userArguments` a Knob created with `new Kn
 This contains all the Drawers to which this knob is attached.
 Assigning a Drawer to this property will add it to the list, and assigning an array of Drawers will add them all.
 Adding a Drawer will cause the Knob to begin observing it, and interacting with the Drawer as its settings dictate.
+`detachDrawer(HTMLElement)`:: _<Function>_
++
+Pass a Drawer element to this function stop observing it.
+The Knob will no longer react to the Drawer's state, and will no longer toggle that state via clicks.
 `actions`:: _<Map<string, Function>>_
 +
 Callbacks called by the MutationObserver.
