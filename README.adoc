@@ -430,7 +430,7 @@ api.actions = (list, api, observer) => {
 };
 
 // later we could easily remove this action
-drawerAPI.settings = drawerAPI.settings.filter(action => action.name !== 'doSomeAction');
+api.store.repo.get('actions').delete('doSomeAction');
 ----
 
 If a callback you pass doesn't have a name that Drawer can determine, it will be given a randomly-generated name by `uuid()`.
