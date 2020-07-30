@@ -33,12 +33,13 @@ const sel = (el: any): Array<HTMLElement> => {
 
 /**
  * Replicates .flat() for arrays with only a single level of depth.
+ * If passed something that isn't an array, it just returns it.
  *
  * This is to handle browsers (i.e. IE) that don't support .flat().
  * @param arr
  * @return {any[]}
  */
-const flattenSingle = (arr: Array<any>): Array<any> => arr.reduce((acc, val) => acc.concat(val), []);
+const flattenSingle = (arr: Array<any>): Array<any> => Array.isArray(arr) ? arr.reduce((acc, val) => acc.concat(val), []) : arr;
 
 /**
  * Attempts to make something (usually a string) in a url-safe string.
