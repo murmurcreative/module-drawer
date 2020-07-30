@@ -1,7 +1,7 @@
 :Date: 07/29/2020
 :Author: Ben Martinez-Bateman
 :Email: ben@murmurcreative.com
-:Version: 2.4.1-alpha
+:Version: 2.4.2-alpha
 :toc: macro
 :toclevels: 3
 :toc-title:
