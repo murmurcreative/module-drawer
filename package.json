@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "parcel demo/index.html",
-    "release": "parcel build ./src/index.ts"
+    "release": "rimraf ./dist && parcel build ./src/index.ts"
   },
   "repository": {
     "type": "git",
@@ -26,7 +26,7 @@
   "homepage": "https://github.com/murmurcreative/module-drawer#readme",
   "devDependencies": {
     "husky": "^4.2.5",
-    "parcel": "^2.0.0-beta.1",
+    "parcel-bundler": "^1.12.4",
     "typescript": "^3.9.6"
   },
   "volta": {
