@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "target": "ES6",
-    "lib": ["esnext", "dom"],
-    "outFile": "./index.js"
+    "lib": ["esnext", "dom"]
   }
 }

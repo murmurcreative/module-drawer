@@ -1,14 +1,15 @@
 {
   "name": "@murmurcreative/drawer",
-  "version": "2.4.3-alpha",
+  "version": "2.4.4-alpha",
   "description": "Open things and close them as well.",
-  "main": "dist/index.js",
+  "main": "lib/index.js",
+  "module": "lib/index.js",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/"
   },
   "scripts": {
     "dev": "parcel demo/index.html",
-    "release": "rimraf ./dist && parcel build ./src/index.ts"
+    "release": "rollup --config rollup.config.js"
   },
   "repository": {
     "type": "git",
@@ -25,8 +26,15 @@
   ],
   "homepage": "https://github.com/murmurcreative/module-drawer#readme",
   "devDependencies": {
+    "@babel/cli": "^7.10.5",
+    "@babel/core": "^7.10.5",
+    "@babel/preset-env": "^7.10.4",
+    "@babel/preset-typescript": "^7.10.4",
+    "@rollup/plugin-typescript": "^5.0.2",
     "husky": "^4.2.5",
     "parcel-bundler": "^1.12.4",
+    "rollup": "^2.23.0",
+    "tslib": "^2.0.0",
     "typescript": "^3.9.6"
   },
   "volta": {

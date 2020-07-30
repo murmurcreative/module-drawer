@@ -1,4 +1,4 @@
-namespace IDrawer {
+declare namespace IDrawer {
     export interface Settings extends ISettings.Default {
         inStates: (state: string) => boolean;
         states: Array<string>;
@@ -53,7 +53,7 @@ namespace IDrawer {
     }
 }
 
-namespace IKnob {
+declare namespace IKnob {
     export interface Settings extends ISettings.Default {
         cycle: boolean;
         accessibility: boolean;
@@ -85,13 +85,13 @@ namespace IKnob {
     }
 }
 
-namespace IActions {
+declare namespace IActions {
     export interface Observe {
         (list: Array<MutationRecord>, api: IDrawer.API | IKnob.API, observer: MutationObserver): void;
     }
 }
 
-namespace IStores {
+declare namespace IStores {
     export interface Default {
         repo: Map<string, any>;
         mapGet: Map<string, any>;
@@ -101,7 +101,7 @@ namespace IStores {
     }
 }
 
-namespace ISettings {
+declare namespace ISettings {
     export interface Default {
         repo: Map<string, any>;
         append: (name: string, row: any) => void;
