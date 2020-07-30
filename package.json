@@ -1,13 +1,14 @@
 {
   "name": "@murmurcreative/drawer",
-  "version": "2.4.0-alpha",
+  "version": "2.4.1-alpha",
   "description": "Open things and close them as well.",
-  "main": "index.js",
+  "main": "dist/index.js",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/"
   },
   "scripts": {
-    "dev": "parcel demo/index.html"
+    "dev": "parcel demo/index.html",
+    "release": "rimraf ./dist && parcel build --no-content-hash src/index.ts"
   },
   "repository": {
     "type": "git",
