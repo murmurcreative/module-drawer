@@ -106,8 +106,8 @@ function Drawer(el: HTMLElement, userArguments?: IDrawer.Settings | object | und
     // If there's a matching hash, set the hashState as the initState
     if (extractHash().length > 0) {
         const hash = extractHash();
-        if (isValidHash(hash) && this.getHash() === hash && this.getHashState().length > 0) {
-            this.settings.initState = this.getHashState();
+        if (isValidHash(hash) && this.hash === hash && this.settings.hashState.length > 0) {
+            this.settings.initState = this.settings.hashState;
         }
     }
 
