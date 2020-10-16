@@ -1,11 +1,12 @@
-= Drawer
-:Date: 2020/03/03
-:Revision: 1.2.0
+:Date: 10/16/2020
 :Author: Ben Martinez-Bateman
 :Email: ben@murmurcreative.com
+:Version: 2.0.0
 :toc: macro
-:toclevels: 6
+:toclevels: 3
 :toc-title:
+:sectanchors:
+:sectlinks:
 ifdef::env-github[]
 :tip-caption: :bulb:
 :note-caption: :information_source:
@@ -21,250 +22,494 @@ ifndef::env-github[]
 :warning-caption: ⚠
 endif::[]
 
-This webcomponent follows the https://github.com/open-wc/open-wc[open-wc] recommendation.
+= 🗄️ Drawer
+
+*Broadly:* Open things and close them as well.
+
+*Technically:* Swap states on a particular element.
+
+Drawer was originally created to handle opening and closing website navigation menus.
+It still does this very well!
+But you can use it to do other things too.
 
 toc::[]
 
 == Installation
 
-[source,bash]
+[subs="attributes"]
+[source,shell script]
 ----
-npm i @murmurcreative/drawer
+npm install @murmurcreative/drawer@{Version}
 ----
 
-== Usage
+[source,javascript]
+----
+import {Cabinet} from 'murmur-drawer';
+new Cabinet();
+----
 
 [source,html]
 ----
-<script type="module">
-  import 'murmur-drawer/murmur-drawer.js';
-</script>
+<div data-module="drawer" data-knob="#knob">
+    <!--  Drawer Contents  -->
+</div>
 
-<murmur-drawer>
-  <h2 id="the-drawer">The Drawer</h2>
-  <p>Some content.</p>
-  <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Tenetur quaerat sint consequuntur. Omnis, totam enim, non reiciendis fugiat quos provident, quisquam eveniet incidunt libero ipsa necessitatibus corrupti dolor fuga accusamus.</p>
-</murmur-drawer>
+<button id="knob">Toggle</button>
 ----
 
-This is a very simple module, but it can be used for things like item selection, simple reveals, etc.
-It can also be composed together with other drawers to make menus, accordions, etc.
+Now you have a Drawer!
 
-The drawer needs to be able to determine a (relatively) unique id for itself, in order for it to be able to do certain things.
-There are several ways you can set this ID:
+For more details on functionality, etc, take a look at the link:#config[configuration] and link:#api[API] sections.
 
-. An `id` attribute on the heading inside the drawer
-. An `id` attribute on the drawer element itself (this overrides #1)
-. A `name` attribute on the drawer element itself (this overrides #1 and #2)
+[#parts]
+== Parts
 
-=== `icon` Slot
+[#parts-drawer]
+=== Drawer
+The core of Drawer is, well, the Drawer.
+In an instance, the Drawer should be considered the source of truth:
+Its state is what you should trust, and what all other components should refer to for an authoritative answer.
+The module is structured in a way that assumes this relationship and encourages you to go along with it.
+You can chose not to, if you like, but things might get dicey.
 
-By default the module uses a big "plus" sign to indicate whether the module is open or closed.
-If you would like to customize this, you can do so with the `icon` slot:
+A Drawer is an element in the DOM that has a state attached to it.
+That state can be manipulated.
+When certain states are active, the Drawer might do certain things, or take on certain properties.
+The module is written to be fairly minimal, and doesn't provide a lot of bells and whistles out of the box, but it gives you the tools to cast your own bells and carve your won whistles.
 
-[source,html]
-----
-<style>
-  .closed, .opened {
-    display: none;
-  }
-  [data-open="false"] .closed {
-    display: block;
-  }
-  [data-open="true"] .opened {
-    display: block;
-  }
-</style>
-<murmur-drawer>
-  <h2 id="the-drawer">The Drawer</h2>
-  <p>Some content.</p>
-  <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Tenetur quaerat sint consequuntur. Omnis, totam enim.</p>
-  <div slot="icon">
-    <span class="opened">👆</span>
-    <span class="closed">👇</span>
-  </div>
-</murmur-drawer>
-----
+[#parts-knob]
+=== Knob
+Knobs are optional, but they are useful for 90% of the things a Drawer is likely to be created for.
 
-The slot element will be given a `data-open` attribute that is `false` when the drawer is closed and `true` when open.
-Since this is applied to an element in the "light" DOM, you can use a normal stylesheet to control the appearance of elements inside the slot.
-
-== Polyfills
-
-The base module includes no polyfills or transpiling; it's just nice clean ES6 that should work in modern browsers.
-Until support for all the required technologies is more universal, we'll probably want to include the following _before_ including the element javascript.
-All you need to do is add this:
-
-[source,html]
-----
-<script
-    src="https://unpkg.com/@webcomponents/webcomponentsjs@2.3.0/webcomponents-loader.js">
-</script>
-----
-
-This will load any necessary for base functionality.
-Modules extended from this one may require their own polyfills.
-
-== Content
-
-=== heading
-
-This represents the name of the section this drawer contains.
-A heading must following a few rules:
-
-. It must be an `h` element (i.e. `h1`, `h3`, etc)
-. It must be the first element inside the `<murmur-drawer>`
+A Knob is an element that observes one or more Drawers for changes in their state, and has the capacity to react to those changes.
+Out of the box, a Knob also has the capacity to respond to click events by cycling the states on its attached Drawer(s).
 
 [WARNING]
-While the heading is optional, if no heading is included then the drawer will load closed (i.e. invisible).
-Only forgo a heading if you have a plan to open the drawer in some other way (see the `toggle()` method or `open` attribute).
+====
+Knobs can have many Drawers, and Drawers can have many Knobs.
+In most cases, they won't;
+your nav menu probably only needs one toggle button, after all.
+Still, Drawer is built to assume that there can always be more than one Drawer or Knob, which means you should be circumspect when describing your element selectors.
+====
 
-=== content
+[#config]
+== Configuration
 
-This is the content the drawer reveals, and is more or less required; Although the drawer will load if no content is defined, there isn't much point.
-Any content inside the drawer that is not a heading (as defined above) will be considered content.
+[#config-selector]
+=== Selector
 
-[source,html]
+With a few exceptions, when specifying an element (or set of elements) you can use a variety of arguments and trust that Drawer will just handle it for you.
+Wherever you see the `SelectorArgument` type, you can use one of the following types:
+
+`HTMLElement`:: i.e. the result of `document.querySelector('selector-name')`.
+`string`:: This will be interpreted as a selector, i.e. `.class`, `#id`, etc.
+`Array<HTMLElement | string>`:: An array of either of the above.
+
+[NOTE]
+====
+Internally, Drawer almost always deals with elements as arrays; targeting a single element usually just means an array with one row.
+Keep this in mind when crafting your selectors:
+If you want to be _certain_ Drawer targets only a single element, pass it that element directly.
+====
+
+[#config-drawer]
+=== Drawer / Cabinet
+
+Both `Drawer` and `Cabinet` take a second argument that can contain more specific settings.
+Passing an object to this argument will overwrite the defaults on a per-property basis.
+This is done using a shallow merge.
+When calling `Drawer` the settings will apply only to that Drawer; When calling `Cabinet` the settings will apply to all Drawers that match.
+
+[horizontal]
+`states`:: _<Array<string>>_ *Default:* `['closed', 'open']`
++
+These are the states that appear in `data-state`.
+`cycle()` will move through them in order, one at a time, looping to the beginning once last row is reached.
+The strings themselves are essentially arbitrary.
+`initState`:: _<string>_ *Default:* `undefined` (effectively `states[0]`)
++
+The initial state.
+Must be a string from `states`.
+If nothing is defined here, then the first state in `states` will be used.
++
+Can be overridden by adding `data-state="state-name"` to the Drawer HTML.
+`hiddenStates`:: _<Array<string>>_ *Default:* `['closed']`
++
+An array of strings.
+When the Drawer is in a state listed here, it will be considered hidden and the `hidden` HTML attribute will be applied.
+If you don't ever want the drawer to be hidden, just set this to an empty array.
+`hash`:: _<string>_ *Default:* `''` (empty string)
++
+If set, this is a string that will be appended to the URL as a `#hash` when the Drawer's state matches the `hashState`.
+If there is already a matching hash in the URL when the Drawer is instantiated, it will be immediately put into that state, regardless of any other settings.
++
+[NOTE]
+====
+Mechanically it does this by overriding your `initState` with the `hashState`, which will remain the `initState` for the life of that Drawer (unless manually changed).
+====
++
+Can be overridden by adding `data-hash="hash-string"` to the Drawer HTML.
+`hashState`:: _<string>_ *Default:* `''` (empty string)
++
+The state that should correspond to your `hash`.
+This must be a valid state (i.e. it must be in `states`) and it cannot be a "hidden" state (i.e. it _cannot_ be in `hiddenStates`).
+`hashStates` that do not meet this criteria will be ignored.
++
+If there is no valid `hash` set, this setting will have no effect.
++
+If `hash` is valid but `hashState` is not, the Drawer will use the first non-hidden state it can find in `states`.
++
+Can be overridden by adding `data-hashState="state"` to the Drawer HTML.
+`actions`:: _<Array<Function>>_ *Default:* `[]`
++
+An array of callbacks, called when the Drawer observes its state changing.
+See link:#actions[`actions`] for details.
+`uuid`:: _<Function>_ *Default:* (internal function)
++
+Drawer uses a simple internal function generate uuids.
+If you require something more cryptographically secure, add a callback here that returns a uuid.
+`knobs`:: _<link:#config-selector[SelectorArgument] | Object>_ *Default:* `[]`
++
+If passed a `SelectorArgument`, this will attach all matching Knobs to the drawer, with default settings.
++
+If you need to attach knobs with different settings, instead pass an argument with the following shape:
++
+[source,javascript]
 ----
-<murmur-drawer>
-    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-</murmur-drawer>
+{
+    elements: ['.knob'], // SelectorArgument
+    settings: {
+        cycle: false,
+        accessibility: true,
+        actions: [
+            function doThing(list) {
+                doTheThing(list);
+            },
+        ]
+    },
+}
 ----
++
+All matching elements will be assigned those settings and link:#actions[actions].
++
+This is overridden by `data-knob='selector'` on the Drawer.
+Keep in mind that this method will always attach knobs with default settings.
 
+[#config-knob]
+=== Knob
+
+If you're instantiating Knobs independently with `new Knob()` then you can pass a settings object as the second parameter with the following options:
+
+[horizontal]
+`cycle`:: _<boolean>_ *Default:* `true`
++
+A boolean that determines whether or not clicking on a Knob will fire `cycle()` on its attached Drawers.
+`accessibility`:: _<boolean>_ *Default:* `true`
++
+This enables (or disables) accessibility features.
+Generally you should not turn it off, but for some use cases (i.e. non-interactive knobs) it may be desirable to disable it, which you can do by passing `false`.
+`actions`:: _<Array<Function>>_ *Default:* `[]`
++
+An array of callbacks, called when a Drawer this Knob is attached to changes state.
+See link:#actions[`actions`] for details.
+
+[#api]
 == API
 
-=== Attributes
+Drawers and Knobs have an API object attached to their elements in the DOM.
+For Drawers, this is a `.drawer`;
+for Knobs, `.knob`.
+You can also get the API for either by calling `getDrawer(element)` or `getKnob(element)`.
 
-==== open
+[#api-drawer]
+=== Drawer
 
-Default:: `false`
+To create a Drawer, do one of the following:
 
-This represents whether the drawer is open (the attribute is present) or closed (the attribute is not present).
-Generally it is set dynamically by the drawer itself based on user interaction, but you can set it manually.
+- `new Drawer(HTMLElement, userArguments)`
+- `new Cabinet(SelectorArgument, userArguments)`
 
-==== headless
+`new Drawer` will return an API object
+(described below)
+while `new Cabinet` will return an array of API objects.
+`new Cabinet` will create Drawers on whatever objects match its `SelectorArgument`, but if the first parameter is undefined
+(or an invalid selector)
+it will use the default selector: `data-module="drawer"`.
 
-Default:: `false`
+[horizontal]
+`state`:: _<string>_
++
+The current state of the Drawer.
+To change the state, assign a new one: `api.state = `closed``.
+Attempting to assign an invalid state
+(i.e. one that isn't in the `settings.states` array)
+will have no effect.
+`hidden`:: _<boolean>_
++
+Whether or not the Drawer is hidden.
+This is based on the current value of `state` and the value(s) in `settings.hiddenStates`.
++
+Although this value can be set by assigning a new value
+(`api.hidden = false`)
+doing so will _not_ change the `state`, and so may odd behavior.
+If you want to hide a Drawer, change the `state` to something that is a hidden state.
+`cycle(states?: Array<string>)`:: _<Function>_
++
+Cycles through states on the Drawer.
+If called without an argument, it advances to the next states.
+If called with an array of valid states, it will advance to the next valid state in that array.
+`actions`:: _<Map<string, Function>>_
++
+Callbacks called by the MutationObserver.
+See link:#actions[actions] for how those callbacks are constructed.
+To add one, assign it: `api.actions = someAction`.
+This will _append_ the new action, unless it has the same name as an already-stored action, in which case it will replace the old one.
+You can also assign array of actions, which will behave in the same way.
+`knobs`:: _<Map<HTMLElement, KnobAPI>>_
++
+List of Knobs attached to this Drawer.
+To add a new knob, assign it: `api.knobs = document.querySelector('.knob'))`.
+This will _append_ new Knobs, but if you attempt to add the same `HTMLElement` it will overwrite the old one.
+You can also assign arrays of Knobs, which will behave in the same way.
+`detachKnob(knob: HTMLElement)`:: _<Function>_
++
+Pass the element for a Knob to this function to detach it from this Drawer.
+The Knob will stop observer and reacting to the Drawer, and will no longer toggle it when clicked.
+`hash`:: _<string>_
++
+The string used for the URL hash feature.
+If this is a string, the feature is enabled;
+otherwise it is disabled.
++
+While you can assign it directly, usually
+`mount`:: _<HTMLElement>_
++
+The element that this API is attached to.
+It is here to allow you access to the element from actions, etc.
+You _cannot_ modify its value after the Drawer has been created.
 
-This attribute is set if the drawer has no heading.
-It will be set automatically if the drawer contains no valid heading element, but you can set it manually if, say, you have a `h` element as your first element but don't want it used as the heading.
+The above are the API endpoints you should be using;
+they are chosen to give you necessary access to the things required, take steps validate your input, and are extremely unlikely to change outside of a major version bump.
+If you need some deeper access the following properties are also exposed, but keep in mind that their shape is not as guaranteed, and they have fewer checks in place to help you not break things.
 
-==== name
+[horizontal]
+`settings`:: Contains internal settings for the Drawer.
+Settings are things that (generally) aren't going to change after instantiation and describe
+behavior, like `hiddenStates` or the hash used if `hash` is enabled.
+While they do some validation on input, changing them generally has no side effects.
+`store`:: Contains internal values and references for the Drawer.
+Things in the store are more dynamic and likely to change, and are also often complex objects that the Drawer acts upon, or asks to act for it.
+Modifying items in the store will often have side effects;
+i.e. adding an item to `knobs` will cause a new `Knob` to be created on an element and attached to this drawer.
+Nearly everything in the store is proxied through the common API endpoints, so you should use those instead of accessing the store directly.
+`hasher`
 
-Default:: `null`
 
-The drawer will use an id on its heading to do some things, most notably to set a URL that automatically opens the drawer when visited.
-If you want to use that functionality but won't be using a heading, then you can set this attribute to whatever you would like to use as an id.
+[#api-knob]
+=== Knob
 
-[TIP]
-====
-If you want to set this via javascript, it is part of the `heading` object:
+To create a Knob, do one of the following:
+
+- Assign a `SelectorArgument` to the `knobs` property of a Drawer.
+- Add a `data-knob="selector"` attribute to a Drawer.
+- `new Knob(HTMLElement, userArguments)`
+
+`new Knob` will return an API object
+(described below)
+and you can retrieve the API object for a Knob from the `knobs` on a Drawer if you have its element:
+
 [source,javascript]
 ----
-document.querySelector(`murmur-drawer`).heading.id = `your-id`
+const knobAPI = drawerAPI.knobs.get(knobElement);
 ----
-====
-
-==== hash
-
-Default:: `false`
-
-If this is enabled, the drawer will set a URL hash when opened, and when visiting that URL it will automatically open the drawer.
-Since one of the main use cases for the drawer is for main site navigation, which should never 'start open', this attribute defaults to false.
-As a boolean attribute, its presence on the element is enough to activate the feature.
-
-==== controller
-
-Default:: `null`
-
-This attribute allows you to quickly and easily define an element (or elements) that will control the state of this drawer.
-Set the value of the attribute to a CSS selector that matches the elements you want to use to control this drawer.
-If you have multiple drawers, make sure that their controllers are distinct:
-Otherwise you may get some very strange behavior.
-
-Controllers will get a `aria-expanded` attribute to reflect the state of their drawer:
-`aria-expanded="true"` when open, `aria-expanded="false"` when closed.
-
-[source,html]
-----
-<button id="specific-button" aria-expanded="false">Click to Open</button>
-<murmur-drawer controller="button#specific-button">
-    ...
-</murmur-drawer>
-----
-
-[TIP]
-====
-It is recommended that you set `aria-expanded="false"` on your controller manually, so that it has the correct value before instantiation of the module.
-====
-
-[IMPORTANT]
-====
-While you can technically use any element as a controller, you should keep two things in mind:
-
-. The module will watch for `click` events on controllers, so use elements that can spawn that event.
-. For semantic and interaction reasons, it is _strongly_ recommended that you use `button` elements for your controllers
-====
-
-=== CSS
 
 [WARNING]
 ====
-.TODO
-Document the rest of the CSS properties.
+Unless you pass a drawer property in `userArguments` a Knob created with `new Knob` will not be attached to any drawer.
 ====
 
-==== Hidden
+[horizontal]
+`drawers`:: _<Map<HTMLElement, MutationObserver>>_
++
+This contains all the Drawers to which this knob is attached.
+Assigning a Drawer to this property will add it to the list, and assigning an array of Drawers will add them all.
+Adding a Drawer will cause the Knob to begin observing it, and interacting with the Drawer as its settings dictate.
+`detachDrawer(HTMLElement)`:: _<Function>_
++
+Pass a Drawer element to this function stop observing it.
+The Knob will no longer react to the Drawer's state, and will no longer toggle that state via clicks.
+`actions`:: _<Map<string, Function>>_
++
+Callbacks called by the MutationObserver.
+See link:#actions[actions] for how those callbacks are constructed.
+To add one, assign it: `api.actions = someAction`.
+This will _append_ the new action, unless it has the same name as an already-stored action, in which case it will replace the old one.
+`mount`:: _<HTMLElement>_
++
+The element that this API is attached to.
+It is here to allow you access to the element from actions, etc.
+You _cannot_ modify its value after the Knob has been created.
 
-In some cases it may be useful to redefine what `hidden` means
-(i.e. if you want to do something more complex that simply hide/show content).
+The above are the API endpoints you should be using;
+they are chosen to give you necessary access to the things required, take steps validate your input, and are extremely unlikely to change outside of a major version bump.
+If you need some deeper access the following properties are also exposed, but keep in mind that their shape is not as guaranteed, and they have fewer checks in place to help you not break things.
 
-* `--mod-hidden-display` (`none`) +
-This sets the `display` property for `[hidden]` within the drawer.
-An example usage might be to set this to `block`, and then change the `opacity` of the parent `murmur-drawer` based on the presence of the `open` attribute there.
+[horizontal]
+`settings`:: Contains internal settings for the Knob.
+Settings are things that (generally) aren't going to change after instantiation and describe
+behavior, like `cycle` or `accessibility`.
+While they do some validation on input, changing them generally has no side effects.
+`store`:: Contains internal values and references for the Knob.
+Things in the store are more dynamic and likely to change, and are also often complex objects that the Knob acts upon, or asks to act for it.
+Modifying items in the store will often have side effects;
+i.e. adding an item to `drawers` will cause the Knob to being observing the Drawer.
+Nearly everything in the store is proxied through the common API endpoints, so you should use those instead of accessing the store directly.
 
-=== Methods
 
-==== toggle()
+[#actions]
+== Actions
+
+Actions are an important part of how we interact with drawers and knobs.
+In both cases, actions have an essentially identical signature:
+
+. `list`
++
+This is an array of link:https://developer.mozilla.org/en-US/docs/Web/API/MutationRecord[MutationRecords], each of which describes an observed mutation change.
+For most actions, you will be primarily concerned with these items, because they tell you what has just happened.
+. `api`
++
+This is the API for the thing that this action is attached to;
+A Knob or a Drawer.
+Notably this is *not* the element that is being observed;
+if you want that element it can be found in `MutationRecord.target`.
+The API is made available here so that the action can make its host do things in response to the event.
+. `observer`
++
+The observer that observed this mutation.
+In most cases you won't need this, but it some situations it may be useful, i.e. if you want to respond to a particular mutation by ceasing to observe.
+
+The MutationObservers here are limited:
+Both watch only for changes to the `data-state` and `hidden` attributes on drawers, and only on the element itself (children are ignored).
+However, sometimes both will trigger at the same time, i.e. if the Drawer moves into a hidden state.
+`MutationRecord.attributeName` will tell you which particular attribute generated a particular MutationRecord.
+`MutationRecord.oldValue` will tell you what the attribute mutated _from_.
+The MutationRecord itself doesn't contain the current value, but you can easily get it from `MutationRecord.target`:
 
 [source,javascript]
 ----
-document.querySelector(`murmur-drawer`).toggle();
+function someAction(list) {
+    list.map(record => {
+        console.log(record.target.getAttribute(record.attributeName));
+    })
+}
 ----
 
-Calling this method will swap the `open` state of the drawer: If it was open, it will close it, and visa-versa.
+[NOTE]
+====
+If `settings.initState` differs from the state set on the Drawer at instantiation, the Drawer will fire an action as the states are brought into alignment.
+If the Drawer had no state before instantiation (i.e. it had no `data-state` attribute) then `MutationRecord.oldValue` will be `undefined`.
+This can be a good way to know when an action is being run for the first time, although there is no guarantee this is the case.
+====
 
-=== Events
+When adding actions, you are encouraged to write named functions and then pass those as callbacks, rather than using anonymous/arrow functions.
+This makes it easier to identify and potentially modify the actions assigned to a Drawer or Knob.
 
-Each drawer will emit several events when different things happen to it.
-These events are used internally to drive the state of the module, but you can also hook into them and implement a lot of additional functionality.
-
-`drawer-opened`::
-  This fires when the drawer has opened.
-  When this event fires, the drawer is already open.
-`drawer-closed`::
-  This fires when the drawer has closed.
-  When this event fires, the drawer is already closed.
-
-== Development
-
-=== Testing using karma
-
-[source,bash]
+[source,javascript]
 ----
-npm run test
+// good
+function doSomeAction(list, el, observer) {
+    // do something
+}
+api.actions = doSomeAction;
+
+// good
+const doAnotherAction = (list, api, observer) => {
+    // do another thing
+};
+api.actions = doAnotherAction;
+
+// bad
+api.actions = (list, api, observer) => {
+    // do a mysterious thing
+};
+
+// later we could easily remove this action
+api.store.repo.get('actions').delete('doSomeAction');
 ----
 
-=== Testing using karma via browserstack
+If a callback you pass doesn't have a name that Drawer can determine, it will be given a randomly-generated name by `uuid()`.
 
-[source,bash]
+== Examples
+
+=== Simple
+
+The following is a simple, complete example that will result in a drawer that can be opened and closed by clicking on the button:
+
+[source,javascript]
 ----
-npm run test:bs
+import {Drawer} from "murmur-drawer";
+
+new Drawer(document.querySelector('.drawer'));
 ----
 
-=== Linting
+[source,html]
+----
+<div class="drawer"
+    data-knob="button[data-controls='drawer']"> 🧦🧦🧦🧦🧦🧦🧦🧦 </div>
+<button data-controls="drawer"> Toggle </button>
+----
 
-[source,bash]
+== Further Reading
+
+Drawer is several dozen lines of code that manage, essentially, one thing:
+
+[source,html]
 ----
-npm run lint
+data-state="open"
 ----
+
+This is the single source of truth for everything Drawer does, and by taking advantage of a number of native browser features it does so efficiently and extensibly.
+
+Using link:https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver[MutationObserver], Drawer watches for state changes and reacts to them.
+You are of course encouraged to use Drawer's simple API to interact with its state, but the beauty of MutationObserver is that it doesn't matter:
+
+[source,javascript]
+----
+const el = document.querySelector('.drawer');
+
+// Drawer API
+const {setState} = el.drawer;
+setState('closed');
+
+// Direct access
+drawer.dataset.state = 'closed';
+----
+
+The API is largely built on the following ideas:
+
+- Relevant data should be easily accessible
+- Changing that data should cause the rest of the state and element to react
+- Behavior should be as consistent as possible across interfaces
+
+As a result, most functionality is accessed by assigning data to properties, which then use getters and setters to
+
+a. Validate inputs
+b. Store data in internal Maps
+c. Fire off side effects that accomplish the actual functionality
+
+This makes the API easy to use, easy to discover, and hopefully fun.
+
+== Goals
+
+=== Better IE11 Compatibility
+
+Trying to get v1 of this module to work with IE11 was possible, but a huge hassle.
+By avoiding any framework, and keeping the source simple, my intent is to make v2 either compatible out of the box, or compatible with a minimal amount of work.
+This might look like distributing a separate transpiled source file for browsers that don't support modern technologies, or a sort section in the Readme detailing how to get it working in IE11.
+
+Whatever the case, you should be able to trust that this module will work, easily, in IE11.
+
+=== Simpler
+
+Instead of getting fancy with things like web components, this keeps it simple:
+No frameworks or dependencies, just good old link:http://vanilla-js.com/[Vanilla JS].

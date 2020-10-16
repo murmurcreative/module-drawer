@@ -1,6 +1,22 @@
 # Drawer
 
-NPM doesn't appear to support Asciidoc, so you've got two options:
+Open and close things through simple state management.
 
-1. Read the document [on github](https://github.com/murmurcreative/module-drawer/blob/master/README.adoc).
-2. Read the documentation in `README.adoc` in the package.
+```shell script
+npm install @murmurcreative/drawer@2.1.0-alpha
+```
+
+```javascript
+import {Cabinet} from '@murmurcreative/drawer';
+new Cabinet();
+```
+
+```html
+<div data-module="drawer" data-knob="#knob">
+    <!--  Drawer Contents  -->
+</div>
+
+<button id="knob">Toggle</button>
+```
+
+For full documentation, see the [expanded readme](README.adoc).
